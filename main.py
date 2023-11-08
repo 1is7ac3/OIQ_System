@@ -53,7 +53,6 @@ class Product:
         frame = LabelFrame(self.wind, text='Inventario Productos')
         frame.place(x=0, y=0, width=500, height=110)
         frame.grid(row=3, column=5)
-
         Label(frame, text='Nombre: ').grid(row=0, column=0)
         self.name = Entry(frame)
         self.name.focus()
@@ -88,22 +87,10 @@ class Product:
         self.tree.configure(yscrollcommand=self.scrollbarO.set)
         ttk.Button(text='Eliminar', command=lambda: self.confirm_authorization(1)).place(x=0, y=638, width=180,
                                                                                          height=30)
-        # basura = Image.open(resource_path('basura.png'))
-        # self.imgBasura = ImageTk.PhotoImage(basura)
-        # self.imgEliminar = Label(self.wind, image=self.imgBasura)
-        # self.imgEliminar.place(x=30, y=644, width=20, height=20)
         ttk.Button(text='Editar', command=lambda: self.confirm_authorization(2)).place(x=180, y=638, width=180,
                                                                                        height=30)
-        # editar = Image.open(resource_path('editar.png'))
-        # self.imgEdit = ImageTk.PhotoImage(editar)
-        # self.img3 = Label(self.wind, image=self.imgEdit)
-        # self.img3.place(x=200, y=642, width=20, height=20)
         ttk.Button(text='Devoluciones', command=lambda: self.rembolso(self.tree.selection())).place(
             x=360, y=638, width=200, height=30)
-        # reembolso = Image.open(resource_path('renvolso.png'))
-        # self.imgRembolso = ImageTk.PhotoImage(reembolso)
-        # self.img4 = Label(self.wind, image=self.imgRembolso)
-        # self.img4.place(x=380, y=643, width=20, height=20)
         # ttk.Button(text='Buscar por codigo', command=self.window_search_qr).place(x=560, y=638, width=220, height=30)
         # self.img45 = Label(self.wind, image=self.imgEscaner)
         # self.img45.place(x=570, y=643, width=30, height=20)
@@ -120,29 +107,19 @@ class Product:
         self.messageVentas = Label(frame_shopping, text='', fg='red')
         self.messageVentas.place(x=820, y=100, width=400, height=30)
         ttk.Button(text='Cobrar', command=self.cobrar).place(x=820, y=330, width=200, height=30)
-        # car = Image.open(resource_path('carro.png'))
-        # self.imgCarro = ImageTk.PhotoImage(car)
-        # self.imgCobrar = Label(self.wind, image=self.imgCarro)
-        # self.imgCobrar.place(x=830, y=335, width=20, height=20)
         ttk.Button(text='Eliminar producto', command=self.eliminarCompra).place(x=1000, y=330, width=200, height=30)
-        #self.imgEliminar2 = Label(self.wind, image=self.imgBasura)
-        #self.imgEliminar2.place(x=1005, y=335, width=20, height=20)
         ttk.Button(text='+', command=lambda: self.agregarProducto(self.tree.selection())).place(
             x=1188, y=330, width=50, height=30)
         # ttk.Button(text='Escanear', image=self.imgEscaner, command=self.add_qr_sales).place(
         #    x=1236, y=330, width=50, height=30)
         self.update_table_sales()
-        # Label(self.wind, text='TOTAL: ', fg='blue', font=('verdana', 16)).place(x=806, y=385, width=94, height=30)
+        Label(self.wind, text='TOTAL: ', fg='blue', font=('verdana', 16)).place(x=806, y=385, width=94, height=30)
         Label(self.wind, text='$', fg='blue').place(x=880, y=378, width=20, height=40)
         Entry(self.wind, textvariable=self.total, state='readonly', fg='blue').place(
             x=900, y=380, width=200, height=40)
         ttk.Button(text='Ventas del dia y devoluciones', command=lambda: self.historial_ventas(money, user)).place(
             x=1000, y=640, width=300, height=30)
-        # history = Image.open(resource_path('historial.png'))
-        # self.imgHistorial = ImageTk.PhotoImage(history)
-        # self.imgH = Label(self.wind, image=self.imgHistorial)
-        # self.imgH.place(x=1010, y=645, width=18, height=18)
-
+        
     def rgb(self, a, b, c):
         return '#%02x%02x%02x' % (a, b, c)
 
