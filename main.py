@@ -1,4 +1,3 @@
-import sys
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
@@ -8,7 +7,6 @@ import sqlite3
 import datetime
 import os
 import shutil
-from PIL import Image, ImageTk
 import database
 
 password_root = '1234'
@@ -58,42 +56,32 @@ class Product:
         self.name.focus()
         self.name.grid(row=0, column=1)
         Label(frame, text='Precio: ').grid(row=0, column=2)
-        self.price = Entry(frame)
+        self.price = Entry(frame, textvariable=DoubleVar(value=0))
         self.price.grid(row=0, column=3)
         Label(frame, text='Cantidad: ').grid(row=1, column=0)
         self.cantidad = Entry(frame)
         self.cantidad.grid(row=1, column=1)
-        Label(frame, text='Codigo: ').grid(row=1, column=2)
+        Label(frame, text='Código: ').grid(row=1, column=2)
         self.code = Entry(frame)
         self.code.grid(row=1, column=3)
-        # self.imgEscaner = ImageTk.PhotoImage(file='escaner.png')
-        # ttk.Button(frame, text='Escanear', image=self.imgEscaner, command=lambda: self.save_new_qr(1)).grid(
-        #    row=0, column=4)
         ttk.Button(frame, text='Guardar producto', command=self.add_product).grid(row=3, column=0)
-        enviar = Image.open(resource_path('enviar.png'))
-        self.imgEnviar = ImageTk.PhotoImage(enviar)
-        self.imgE = Label(self.wind, image=self.imgEnviar)
-        self.imgE.grid(row=3, column=1)
         self.message = Label(text='', fg='white', bg=self.rgb(172, 187, 215))
         self.message.place(x=0, y=110, width=781, height=30)
-        self.tree = ttk.Treeview(self.wind, height=2, columns=('name', 'price', 'code'))
+        self.tree = ttk.Treeview(self.wind, columns=('name', 'price', 'code'))
         self.tree.place(x=0, y=138, width=800, height=500)
-        self.tree.heading('#0', text='Nombre', anchor=CENTER)
-        self.tree.heading('#1', text='Precio', anchor=CENTER)
-        self.tree.heading('#2', text='cantidad', anchor=CENTER)
-        self.tree.heading('#3', text='codigo de barras', anchor=CENTER)
-        self.scrollbarO = ttk.Scrollbar(self.wind, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.heading('#0', text='NOMBRE', anchor=CENTER)
+        self.tree.heading('#1', text='PRECIO', anchor=CENTER)
+        self.tree.heading('#2', text='CANTIDAD', anchor=CENTER)
+        self.tree.heading('#3', text='CÓDIGO', anchor=CENTER)
+        self.scrollbarO = tk.ttk.Scrollbar(self.wind, orient=tk.VERTICAL, command=self.tree.yview)
         self.scrollbarO.place(x=780, y=138, width=30, height=500)
         self.tree.configure(yscrollcommand=self.scrollbarO.set)
-        ttk.Button(text='Eliminar', command=lambda: self.confirm_authorization(1)).place(x=0, y=638, width=180,
-                                                                                         height=30)
-        ttk.Button(text='Editar', command=lambda: self.confirm_authorization(2)).place(x=180, y=638, width=180,
-                                                                                       height=30)
-        ttk.Button(text='Devoluciones', command=lambda: self.rembolso(self.tree.selection())).place(
-            x=360, y=638, width=200, height=30)
-        # ttk.Button(text='Buscar por codigo', command=self.window_search_qr).place(x=560, y=638, width=220, height=30)
-        # self.img45 = Label(self.wind, image=self.imgEscaner)
-        # self.img45.place(x=570, y=643, width=30, height=20)
+        ttk.Button(text='Eliminar',
+                   command=lambda: self.confirm_authorization(1)).place(x=0, y=638, width=180, height=30)
+        ttk.Button(text='Editar',
+                   command=lambda: self.confirm_authorization(2)).place(x=180, y=638, width=180, height=30)
+        ttk.Button(text='Devoluciones',
+                   command=lambda: self.rembolso(self.tree.selection())).place(x=360, y=638, width=200, height=30)
         self.update_table()
         frame_shopping = LabelFrame(self.wind, text='Registra un nuevo producto')
         frame_shopping.place(x=805, y=0, width=600, height=440)
@@ -110,8 +98,6 @@ class Product:
         ttk.Button(text='Eliminar producto', command=self.eliminarCompra).place(x=1000, y=330, width=200, height=30)
         ttk.Button(text='+', command=lambda: self.agregarProducto(self.tree.selection())).place(
             x=1188, y=330, width=50, height=30)
-        # ttk.Button(text='Escanear', image=self.imgEscaner, command=self.add_qr_sales).place(
-        #    x=1236, y=330, width=50, height=30)
         self.update_table_sales()
         Label(self.wind, text='TOTAL: ', fg='blue', font=('verdana', 16)).place(x=806, y=385, width=94, height=30)
         Label(self.wind, text='$', fg='blue').place(x=880, y=378, width=20, height=40)
@@ -119,24 +105,21 @@ class Product:
             x=900, y=380, width=200, height=40)
         ttk.Button(text='Ventas del dia y devoluciones', command=lambda: self.historial_ventas(money, user)).place(
             x=1000, y=640, width=300, height=30)
-        
+
     def rgb(self, a, b, c):
         return '#%02x%02x%02x' % (a, b, c)
 
-    def window_search_qr(self):  # 7501050411134.0
+    def window_search_qr(self):
         self.window_search_qr = Toplevel()
-        self.window_search_qr.title = 'Busqueda por QR'
+        self.window_search_qr.title = 'Buscar Articulo'
         self.window_search_qr.geometry('350x100')
         self.window_search_qr.resizable(False, False)
         label_object = LabelFrame(self.window_search_qr, text='Objeto')
         label_object.place(x=50, y=20, width=280, height=180)
         label_object.grid(row=3, column=5)
-        Label(label_object, text='Codigo: ').grid(row=1, column=1)
+        Label(label_object, text='Nombre: ').grid(row=1, column=1)
         self.BusquedaQR1 = Entry(label_object, textvariable=StringVar(self.window_search_qr, value=''))
         self.BusquedaQR1.grid(row=1, column=2)
-
-        ttk.Button(label_object, text='Escanear', image=self.imgEscaner,
-                   command=lambda: self.save_new_qr(3)).grid(row=1, column=3)
         ttk.Button(label_object, text='Buscar',
                    command=lambda: self.window_search_qr_data(self.BusquedaQR1.get())).grid(row=2, column=2)
 
@@ -176,11 +159,10 @@ class Product:
         Entry(cuadro, textvariable=object_quantity_qr).grid(row=2, column=1)
         Label(cuadro, text='Codigo: ').grid(row=3, column=0)
         Entry(cuadro, textvariable=object_code_qr).grid(row=3, column=1)
-        ttk.Button(cuadro, text='Agregar compra', command=lambda: self.agregarProducto(product)).place(x=200, y=0,
-                                                                                                       width=100,
-                                                                                                       height=25)
-        ttk.Button(cuadro, text='Devolución', command=lambda: self.rembolso(product)).place(x=200, y=25, width=100,
-                                                                                            height=25)
+        ttk.Button(cuadro, text='Agregar compra',
+                   command=lambda: self.agregarProducto(product)).place(x=200, y=0, width=100, height=25)
+        ttk.Button(cuadro, text='Devolución',
+                   command=lambda: self.rembolso(product)).place(x=200, y=25, width=100, height=25)
 
     def run_query(self, query, parameters=()):
         with sqlite3.connect(self.db_name) as conn:
@@ -195,12 +177,18 @@ class Product:
         for element in records:
             self.tree.delete(element)
 
-        query = 'select id, name, price, quantity, code from product'
+        query = 'select id, name, price, quantity, code from product order by name desc'
         db_rows = self.run_query(query)
-
         for row in db_rows:
-            self.tree.insert('', 0, text=row[1], values=(row[2], row[3], row[4]), tags=('bg'))
-            self.tree.tag_configure('bg', background='yellow')
+            if row[3] < 1:
+                self.tree.insert('', 0, text=row[1], values=(row[2], row[3], row[4]), tags='bg_red')
+                self.tree.tag_configure('bg_red', background='red')
+            elif row[3] > 1:
+                self.tree.insert('', 0, text=row[1], values=(row[2], row[3], row[4]), tags='bg_green')
+                self.tree.tag_configure('bg_green', background='green')
+            else:
+                self.tree.insert('', 0, text=row[1], values=(row[2], row[3], row[4]), tags='bg_yellow')
+                self.tree.tag_configure('bg_yellow', background='yellow')
 
     def validation(self):
         return len(self.name.get()) != 0 and len(self.price.get()) != 0
@@ -312,21 +300,17 @@ class Product:
         Label(self.edit_wind, text='Nueva ccodigo').grid(row=7, column=1)
         self.new_codigo = Entry(self.edit_wind, textvariable=StringVar(self.edit_wind, value=old_codigo))
         self.new_codigo.grid(row=7, column=2)
-        ttk.Button(self.edit_wind, text='Escanear', image=self.imgEscaner, command=lambda: self.save_new_qr(2)).grid(
-            row=7, column=3)
-
-        # buton de guardado
-        Button(self.edit_wind, text='Guardar', command=lambda: self.edit_records(new_name.get(), name,
-                                                                                 new_price.get(), old_price,
-                                                                                 new_cantidad.get(), old_cantidad,
-                                                                                 self.new_codigo.get(),
-                                                                                 old_codigo)).grid(row=8, column=2,
-                                                                                                   sticky=W + E)
+        ttk.Button(self.edit_wind, text='Escanear', command=lambda: self.save_new_qr(2)).grid(row=7, column=3)
+        Button(self.edit_wind, text='Guardar',
+               command=lambda: self.edit_records(new_name.get(), name, new_price.get(), old_price, new_cantidad.get(),
+                                                 old_cantidad, self.new_codigo.get(),
+                                                 old_codigo)).grid(row=8, column=2, sticky=W + E)
 
     def edit_records(self, new_name, name, new_price, old_price, new_cantidad, old_cantidad, new_codigo, old_codigo):
 
         self.destroy_window()
-        query = 'UPDATE product SET name=?, price=?, cantidad=?, codigo=? WHERE name=? AND price=? AND cantidad=? AND codigo=?'
+        query = ('UPDATE product SET name=?, price=?, quantity=?, code=? WHERE name=? AND price=?'
+                 ' AND quantity=? AND code=?')
         parameters = (new_name, new_price, new_cantidad, new_codigo, name, old_price, old_cantidad, old_codigo)
         self.run_query(query, parameters)
         self.message['text'] = 'El dato {} fue actualizado'.format(name)
@@ -393,19 +377,18 @@ class Product:
             self.message['text'] = 'No hay suficiente producto'
 
     def eliminarCompra(self):
-        # ver si seleciono algo y si obtener el nombre del objeto
         self.messageVentas['text'] = ''
         try:
             self.troo.item(self.troo.selection())['text']
         except IndexError as e:
-            self.messageVentas['text'] = 'porfavor selecione un producto'
+            self.messageVentas['text'] = 'porfavor seleccione un producto'
             return
         self.messageVentas['text'] = ''
         name = self.troo.item(self.troo.selection())['values'][1]
 
         # eliminar el dato seleccionado
         query = 'DELETE FROM sales WHERE id = ?'
-        self.run_queryVentas(query, (name,))  ##
+        self.run_queryVentas(query, (name,))
         self.messageVentas['text'] = 'El dato {} fue eliminado correctamente'.format(name)
         self.update_table_sales()
 
@@ -415,25 +398,20 @@ class Product:
         self.cobrar_wind = Toplevel()
         self.cobrar_wind.title = 'Cobrar producto'
         self.cobrar_wind.geometry('320x200')
-        # limpiar datos
-        self.deposito.set(value=0)
         self.cambio.set(value=0)
         # total=self.troo.item(self.troo.selection())['text']
-
-        # interfa
         Label(self.cobrar_wind, text='TOTAL').grid(row=0, column=0)
         Entry(self.cobrar_wind, textvariable=self.total, state='readonly').grid(row=0, column=1)
         Label(self.cobrar_wind, text='Pago').grid(row=1, column=0)
-        Entry(self.cobrar_wind, textvariable=self.deposito).grid(row=1, column=1)
-
+        self.deposito = Entry(self.cobrar_wind)
+        self.deposito.grid(row=1, column=1)
         Label(self.cobrar_wind, text='Cambio').grid(row=2, column=0)
         Entry(self.cobrar_wind, textvariable=self.cambio, state='readonly').grid(row=2, column=1)
 
         Button(self.cobrar_wind, text='cobrar', command=self.cambioVenta).grid(row=3, column=1, sticky=W + E)
-        self.imgCobrar2 = Label(self.cobrar_wind, image=self.imgCarro).grid(row=3, column=0, sticky=W + E)
 
     def cambioVenta(self):
-        diferencia = self.deposito.get() - self.total.get()
+        diferencia = float(self.deposito.get()) - self.total.get()
         if diferencia >= 0:
 
             self.cambio.set(diferencia)
@@ -504,100 +482,72 @@ class Product:
         try:
             self.tree.item(IdDato)['text'][0]
         except IndexError as e:
-            self.message['text'] = 'porfavor selecione un producto'
+            self.message['text'] = 'por favor seleccione un producto'
             return
-        # caracteristicas de la ventana emergente
         self.edit_rembolso = Toplevel()
         self.edit_rembolso.title = 'Editar historial'
         self.edit_rembolso.geometry('320x200')
-
-        # datos obtenidos
         name = self.tree.item(IdDato)['text']
         price = self.tree.item(IdDato)['values'][0]
         cantidad = self.tree.item(IdDato)['values'][1]
         codigo = self.tree.item(IdDato)['values'][2]
-
-        # Nombre del producto
         Label(self.edit_rembolso, text='Antiguo nombre').grid(row=0, column=1)
-        Entry(self.edit_rembolso, textvariable=StringVar(self.edit_rembolso, value=name), state='readonly').grid(row=0,
-                                                                                                                 column=2)
-        # precio
+        Entry(self.edit_rembolso,
+              textvariable=StringVar(self.edit_rembolso, value=name), state='readonly').grid(row=0, column=2)
+
         Label(self.edit_rembolso, text='Antiguo precio').grid(row=1, column=1)
-        Entry(self.edit_rembolso, textvariable=StringVar(self.edit_rembolso, value=price), state='readonly').grid(row=1,
-                                                                                                                  column=2)
-        # cantidad
+        Entry(self.edit_rembolso, textvariable=StringVar(
+            self.edit_rembolso, value=price), state='readonly').grid(row=1, column=2)
+
         Label(self.edit_rembolso, text='Antigua cantidad').grid(row=2, column=1)
-        Entry(self.edit_rembolso, textvariable=StringVar(self.edit_rembolso, value=cantidad), state='readonly').grid(
-            row=2, column=2)
-        # Boton de goardado
+        Entry(self.edit_rembolso,
+              textvariable=StringVar(self.edit_rembolso, value=cantidad), state='readonly').grid(row=2, column=2)
         new_cantidad = float(cantidad) + 1
-        Button(self.edit_rembolso, text='Rembolsar', command=lambda: self.rembolso_actualizar(name,
-                                                                                              price, new_cantidad,
-                                                                                              cantidad, codigo)).grid(
+        Button(self.edit_rembolso, text='Rembolsar',
+               command=lambda: self.rembolso_actualizar(name, price, new_cantidad, cantidad, codigo)).grid(
             row=4, column=2, sticky=W + E)
 
     def rembolso_actualizar(self, name, price, new_cantidad, cantidad, codigo):
-        # llamar a la funcion actualizar grafica de inventario
         self.edit_records(name, name,
                           price, price, new_cantidad, cantidad, codigo, codigo)
-        # llamar a la funcion para el historial
         self.add_product_history(name, price, 'reembolso')
 
     def actualizarHistorial(self, dinero):
-        # ------------------actualizar los datos de la tabla
-        # limpiar los datos
         records = self.tree_historial.get_children()
         for element in records:
             self.tree_historial.delete(element)
-
-        # crear nuevos datos
         query = 'select id, name, price, date, sale from history'
         db_rows = self.run_query_history(query)
-
-        # aumentarle el valor del dinero
         dinero = float(dinero)
         self.total_caja.set(dinero)
         date = datetime.datetime.now()
 
         for row in db_rows:
             self.tree_historial.insert('', 0, text=row[1], values=(row[2], row[4], row[3]))
-
             # comprobar si es una compra o un rembolso para sumar print(self.HoraInicio.get())
             # self.DiaInicio=StringVar(value=tm.day)
             # self.HoraInicio=StringVar(value=tm.hour)
             # self.MinutoInicio=StringVar(value=tm.minute)
             if str(row[4]) == 'Compra':
                 self.total_caja.set(self.total_caja.get() + row[2])
-
-    # abir historial de venta
     def historial_ventas(self, dinero, usuario):
-
         self.wind_historial = Toplevel()
         self.wind_historial.geometry('1100x400')
         self.wind_historial.resizable(False, False)  # para que no se modifique las dimenciones
         self.wind_historial.title('Historial de ventas')
-
-        # tabla de historial
         self.tree_historial = ttk.Treeview(self.wind_historial, height=2, columns=('name', 'price', ''))
         self.tree_historial.place(x=20, y=10, width=1030, height=300)
-
-        # encabezado de tabla
         self.tree_historial.heading('#0', text='Producto', anchor=CENTER)
         self.tree_historial.heading('#1', text='Precio', anchor=CENTER)
         self.tree_historial.heading('#2', text='devolucion o compra', anchor=CENTER)
         self.tree_historial.heading('#3', text='date', anchor=CENTER)
-
-        # scroollbar
         scrollbarO_historial = ttk.Scrollbar(self.wind_historial, orient=tk.VERTICAL, command=self.tree_historial.yview)
         scrollbarO_historial.place(x=1050, y=10, width=20, height=300)
         self.tree_historial.configure(yscrollcommand=scrollbarO_historial.set)
-
         self.actualizarHistorial(dinero)
-
         Label(self.wind_historial, text='TOTAL', fg='blue').place(x=20, y=340, width=94, height=30)
         Entry(self.wind_historial, textvariable=self.total_caja, state='readonly', fg='blue').place(
             x=114, y=340, width=94, height=30)
-
         ttk.Button(self.wind_historial, text='Corte',
                    command=lambda: self.corteCaja(usuario, self.total_caja, dinero)).place(x=930, y=360, width=94,
                                                                                            height=30)
@@ -609,7 +559,6 @@ class Product:
             print(name)
             query = 'DELETE FROM history WHERE name = ?'
             self.run_query_history(query, (name,))
-
         self.actualizarHistorial(money)
 
     def run_query_customers(self, query, parameters=()):
@@ -620,18 +569,14 @@ class Product:
         return result
 
     def ventana_clientes_actualizar(self):
-        # limpiar los datos
         records = self.tree_clientes.get_children()
-        for element in records:  #####
+        for element in records:
             self.tree_clientes.delete(element)
-
-        # crear nuevos datos
         query = 'select id, name, celular, pedido, date_pedido, date_entrega, anticipo from customers'
         db_rows = self.run_query_customers(query)
-
-        # crear las nueva filas de las tablas
         for row in db_rows:
-            self.tree_clientes.insert('', 0, text=row[1], values=(row[2], row[3], row[4], row[5], row[6]), tags=('bg'))
+            self.tree_clientes.insert(
+                '', 0, text=row[1], values=(row[2], row[3], row[4], row[5], row[6]), tags='bg')
 
     def guardar_cliente(self, name, phone, order, order_date, delivery_date, advance):
 
@@ -668,66 +613,52 @@ class Product:
 
         frame = LabelFrame(self.ventana_clientes, text='Añadir Clientes')
         frame.place(x=0, y=0, width=500, height=150)
-        # nombre
+
         Label(frame, text='Nombre: ').place(x=60, y=2, width=60, height=10)
         self.nameCliente = Entry(frame, textvariable=StringVar(self.ventana_clientes))
         self.nameCliente.place(x=120, y=0, width=120, height=20)
         self.nameCliente.focus()
-        # celular
+
         Label(frame, text='Celular: ').place(x=60, y=32, width=60, height=10)
         self.celularCliente = Entry(frame, textvariable=StringVar(self.ventana_clientes))
         self.celularCliente.place(x=120, y=30, width=120, height=20)
-        # pedido
+
         Label(frame, text='Pedido: ').place(x=60, y=62, width=60, height=10)
         self.pedidoCliente = Entry(frame, textvariable=StringVar(self.ventana_clientes))
         self.pedidoCliente.place(x=120, y=60, width=120, height=20)
-        # date pedido
+
         Label(frame, text='date pedido: ').place(x=250, y=2, width=100, height=10)
         self.date_pedidoCliente = Entry(frame, textvariable=StringVar(self.ventana_clientes))
         self.date_pedidoCliente.place(x=340, y=0, width=120, height=20)
-        # date entrega
+
         Label(frame, text='date entrega: ').place(x=250, y=32, width=100, height=10)
         self.date_entregaCliente = Entry(frame, textvariable=StringVar(self.ventana_clientes))
         self.date_entregaCliente.place(x=340, y=30, width=120, height=20)
-        # date entrega
-        Label(frame, text='Antisipo: ').place(x=250, y=62, width=100, height=10)
+
+        Label(frame, text='Anticipo: ').place(x=250, y=62, width=100, height=10)
         self.anticipoCliente = Entry(frame, textvariable=StringVar(self.ventana_clientes))
         self.anticipoCliente.place(x=340, y=60, width=120, height=20)
-        # Boton de guardado
-        ttk.Button(frame, text='Guardar', command=lambda: self.guardar_cliente(self.nameCliente.get(),
-                                                                               self.celularCliente.get(),
-                                                                               self.pedidoCliente.get(),
-                                                                               self.date_pedidoCliente.get(),
-                                                                               self.date_entregaCliente.get(),
-                                                                               self.anticipoCliente.get())).place(x=165,
-                                                                                                                  y=90,
-                                                                                                                  width=210,
-                                                                                                                  height=30)
-        self.imgE2 = Label(self.ventana_clientes, image=self.imgEnviar)
-        self.imgE2.place(x=222, y=112, width=16, height=17)
 
-        # tabla
-        self.tree_clientes = ttk.Treeview(self.ventana_clientes, height=6, columns=('name'))
+        ttk.Button(
+            frame, text='Guardar', command=lambda:
+            self.guardar_cliente(self.nameCliente.get(), self.celularCliente.get(), self.pedidoCliente.get(),
+                                 self.date_pedidoCliente.get(), self.date_entregaCliente.get(),
+                                 self.anticipoCliente.get())).place(x=165, width=210, height=30)
+        self.tree_clientes = ttk.Treeview(self.ventana_clientes, height=6, columns='name')
         self.tree_clientes.place(x=0, y=160, width=500, height=200)
         # encabezado de tabla
         self.tree_clientes.heading('#0', text='Nombre', anchor=CENTER)
         self.tree_clientes.heading('#1', text='celular', anchor=CENTER)
-        # scroollbar
+
         self.scrollbarO = ttk.Scrollbar(self.ventana_clientes, orient=tk.VERTICAL, command=self.tree_clientes.yview)
         self.scrollbarO.place(x=505, y=160, width=30, height=200)
         self.tree_clientes.configure(yscrollcommand=self.scrollbarO.set)
         self.ventana_clientes_actualizar()
-        # boton de edicion
-        ttk.Button(self.ventana_clientes, text='Revisar', command=self.ventana_clientes_editar).place(x=10, y=360,
-                                                                                                      width=240,
-                                                                                                      height=30)
-        self.img6 = Label(self.ventana_clientes, image=self.imgEdit)
-        self.img6.place(x=80, y=364, width=20, height=20)
-        # boton de eliminar
-        ttk.Button(self.ventana_clientes, text='Eliminar', command=self.eliminar_clientes).place(x=250, y=360,
-                                                                                                 width=250, height=30)
-        self.imgEliminar3 = Label(self.ventana_clientes, image=self.imgBasura)
-        self.imgEliminar3.place(x=325, y=364, width=20, height=20)
+
+        ttk.Button(self.ventana_clientes,
+                   text='Revisar', command=self.ventana_clientes_editar).place(x=10, y=360, width=240, height=30)
+        ttk.Button(self.ventana_clientes,
+                   text='Eliminar', command=self.eliminar_clientes).place(x=250, y=360, width=250, height=30)
 
     def ventana_clientes_editar(self):
         try:
@@ -777,8 +708,6 @@ class Product:
         Label(frame, text='Antisipo: ').place(x=250, y=62, width=100, height=10)
         new_anticipo = Entry(frame, textvariable=StringVar(self.ventana_clientes_edit, value=anticipo))
         new_anticipo.place(x=340, y=60, width=120, height=20)
-
-        # Boton de actualizar
         botonG = ttk.Button(self.ventana_clientes_edit, text='Actualizar',
                             command=lambda: self.actualizarCliente(name, celular, pedido, date_pedido, date_entrega,
                                                                    anticipo, new_name.get(), new_celular.get(),
@@ -788,10 +717,11 @@ class Product:
 
     def actualizarCliente(self, name, celular, pedido, date_pedido, date_entrega, anticipo, new_name, new_celular,
                           new_pedido, new_date_pedido, new_date_entrega, new_anticipo):
-        query = 'UPDATE customers SET name=?, phone=?, delivery=?, date_pedido=?, date_entrega=?, anticipo=? WHERE name=? AND celular=? AND pedido=? AND date_pedido=? AND date_entrega=? AND anticipo=?'
+        query = ('UPDATE customers SET name=?, phone=?, delivery=?, date_pedido=?, date_entrega=?, anticipo=? '
+                 'WHERE name=? AND celular=? AND pedido=? AND date_pedido=? AND date_entrega=? AND anticipo=?')
         parameters = (
-        new_name, new_celular, new_pedido, new_date_pedido, new_date_entrega, new_anticipo, name, celular, pedido,
-        date_pedido, date_entrega, anticipo)
+            new_name, new_celular, new_pedido, new_date_pedido, new_date_entrega, new_anticipo, name, celular, pedido,
+            date_pedido, date_entrega, anticipo)
         self.run_query_customers(query, parameters)
         self.ventana_clientes_actualizar()
         self.ventana_clientes_edit.destroy()
@@ -823,16 +753,16 @@ class Product:
         frameT.place(x=0, y=90, width=500, height=200)
         self.trooUsuarios = ttk.Treeview(frameT, height=2, columns=2)
         self.trooUsuarios.place(x=0, y=0, width=480, height=130)
-        # encabezado de tabla
+
         self.trooUsuarios.heading('#0', text='Usuario', anchor=CENTER)
         self.trooUsuarios.heading('#1', text='Pasword', anchor=CENTER)
-        # scrolbar
+
         self.scrollbarU = ttk.Scrollbar(self.ventana_addUsuario, orient=tk.VERTICAL, command=self.troo.yview)
         self.scrollbarU.place(x=505, y=90, width=30, height=200)
         self.trooUsuarios.configure(yscrollcommand=self.scrollbarU.set)
 
         self.update_table_user()
-        # crear botones
+
         ttk.Button(frameT, text='Editar').place(x=0, y=130, width=240, height=30)
         ttk.Button(frameT, text='Eliminar').place(x=240, y=130, width=240, height=30)
 
@@ -898,8 +828,8 @@ class Product:
         self.dinero_caja.set(dinero)
         self.dinero_caja.set(self.total_caja.get() - self.dinero_caja.get())
         Label(frame, text='Dinero ganado', fg='blue').place(x=5, y=60, width=141, height=30)
-        Entry(frame, textvariable=self.dinero_caja, fg='blue', state='readonly').place(x=162, y=60, width=120,
-                                                                                       height=30)
+        Entry(frame, textvariable=self.dinero_caja,
+              fg='blue', state='readonly').place(x=162, y=60, width=120, height=30)
 
         ttk.Button(frame, text='cierre', command=lambda: self.guardarCorte(dinero)).place(x=290, y=60, width=94,
                                                                                           height=30)
@@ -993,15 +923,6 @@ def run_query_users(query, parameters=()):
     return result
 
 
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath('.')
-
-    return os.path.join(base_path, relative_path)
-
-
 def main():
     database.create_database()
     database.create_database_customers()
@@ -1014,16 +935,16 @@ def main():
     window_pas.resizable(False, False)
     query = 'select id, user , password from users'
     db_rows = run_query_users(query)
-    USUARIOS_CAJA = ['admin']
-    PASWORD_CAJA = ['admin']
+    users_box = ['admin']
+    password_box = ['admin']
 
     for row in db_rows:
-        USUARIOS_CAJA.append(row[1])
-        PASWORD_CAJA.append(row[2])
+        users_box.append(row[1])
+        password_box.append(row[2])
 
     Label(window_pas, text='Usuario').pack()
     user = ttk.Combobox(window_pas, state='readonly')
-    user['values'] = (USUARIOS_CAJA)
+    user['values'] = users_box
     user.pack()
 
     Label(window_pas, text='Clave').pack()
@@ -1035,7 +956,7 @@ def main():
     money.pack()
 
     ttk.Button(window_pas, text='Ingresar',
-               command=lambda: input_users(user.get(), password.get(), USUARIOS_CAJA, PASWORD_CAJA, money.get(),
+               command=lambda: input_users(user.get(), password.get(), users_box, password_box, money.get(),
                                            window_pas)).pack()
 
     window_pas.mainloop()
