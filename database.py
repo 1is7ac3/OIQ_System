@@ -5,11 +5,11 @@ def create_database():
     connection = sqlite3.connect("data.db")
     try:
         connection.execute("""CREATE TABLE "product"(
-           'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-           'name' TEXT NOT NULL,
-           'price' REAL NOT NULL,
-           'quantity' REAL NOT NULL,
-           'code' REAL NOT NULL
+           'id' INTEGER PRIMARY KEY AUTOINCREMENT,
+           'name' TEXT UNIQUE,
+           'price' REAL,
+           'quantity' REAL,
+           'code' REAL
         )""")
 
         cursor = connection.execute("select id, name, price from product")
@@ -54,7 +54,7 @@ def create_database_sales():
            'price' REAL NOT NULL
         )""")
 
-        cursor=connection.execute("select id, name, price from sales")
+        cursor = connection.execute("select id, name, price from sales")
         for fila in cursor:
             print(fila)
         connection.close()
