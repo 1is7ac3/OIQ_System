@@ -2,6 +2,7 @@ import sqlite3
 
 
 def create_database():
+    '''funcion creacion de base de datos'''
     connection = sqlite3.connect("data.db")
     try:
         connection.execute("""CREATE TABLE "product"(
@@ -23,6 +24,7 @@ def create_database():
 
 
 def create_database_customers():
+    '''funcion crear base de datos usuarios'''
     connection = sqlite3.connect("customers.db")
     try:
         connection.execute("""CREATE TABLE "agenda_customers"(
@@ -46,12 +48,14 @@ def create_database_customers():
 
 
 def create_database_sales():
+    '''funcion crear base de datos sales'''
     connection = sqlite3.connect("sales.db")
     try:
         connection.execute("""CREATE TABLE "sales"(
-           'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-           'name' TEXT NOT NULL,
-           'price' REAL NOT NULL
+           'id' INTEGER PRIMARY KEY AUTOINCREMENT,
+           'name' TEXT,
+           'price' REAL,
+           'quantity' REAL
         )""")
 
         cursor = connection.execute("select id, name, price from sales")
