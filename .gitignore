@@ -1,3 +1,5 @@
 venv
 database.py
 .pytest_cache
+__pycache__
+history
