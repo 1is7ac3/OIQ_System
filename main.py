@@ -18,9 +18,10 @@ class Product:
         self.total = tk.DoubleVar(value=0)
         self.total_show = tk.DoubleVar(value=0)
         self.total_exit = tk.DoubleVar(value=0)
+        self.total_exit_show = tk.DoubleVar(value=0)
         self.deposito = tk.DoubleVar(value=0)
         self.cambio = tk.DoubleVar(value=0)
-        self.calculadora = tk.DoubleVar(value=0)
+        self.dinero_caja = tk.DoubleVar(value=0)
         self.user = tk.StringVar(value=user)
         self.password = tk.StringVar()
         self.total_caja = tk.DoubleVar(value=0)
@@ -47,7 +48,7 @@ class Product:
         file_menu.add_separator()
         file_menu.add_command(label='Cerrar sesión', command=self.wind.quit)
         frame = tk.LabelFrame(self.wind, text='Inventario Productos')
-        frame.place(x=0, y=0, width=910, height=100)
+        frame.place(x=0, y=0, width=910, height=80)
         tk.Label(frame, text='Nombre:').place(x=0, y=0)
         self.name = tk.Entry(frame)
         self.name.focus()
@@ -70,7 +71,7 @@ class Product:
         ttk.Button(frame, text='Guardar producto',
                    command=self.add_product).place(x=600, y=30)
         self.message = tk.Label(text='', fg='black')
-        self.message.place(x=0, y=110, width=781, height=30)
+        self.message.place(x=0, y=80, width=781, height=30)
         self.tree = ttk.Treeview(self.wind, columns=(
             'item', 'code', 'name', 'quantity', 'price_buy', 'price_sale',
             'ganancia'))
@@ -135,7 +136,7 @@ class Product:
             self.wind, orient=tk.VERTICAL, command=self.troo.yview)
         self.scrollbar.place(x=1370, y=20, width=30, height=280)
         self.troo.configure(yscrollcommand=self.scrollbar.set)
-        ttk.Button(text='retirar', command=self.cobrar).place(
+        ttk.Button(text='retirar', command=self.change_sales).place(
             x=1030, y=310, width=100, height=30)
         ttk.Button(text='Eliminar producto', command=lambda:
                    self.delete_exit(self.troo.selection())).place(
@@ -151,13 +152,13 @@ class Product:
             x=1060, y=410)
         tk.Label(self.wind, text='$').place(
             x=1100, y=410)
-        tk.Label(self.wind, textvariable=self.total_exit).place(
+        tk.Label(self.wind, textvariable=self.total_exit_show).place(
             x=1110, y=410)
         ttk.Button(text='Ventas del dia', command=lambda:
                    self.historial_ventas(money, user)).place(
                        x=1050, y=500, width=300, height=30)
 
-    def search(self, *arg):
+    def search(self, *args):
         '''funcion busqueda producto'''
         item_tree = self.tree.get_children()
         search = self.entry_search_var.get().upper()
@@ -165,7 +166,9 @@ class Product:
         for item in item_tree:
             if search == '' and search2 == '':
                 self.update_table()
-            if search in self.tree.item(item)['values'][1] and search2 in self.tree.item(item)['values'][1]:
+            if search in self.tree.item(
+                 item)['values'][1] and search2 in self.tree.item(
+                    item)['values'][1]:
                 search_var = self.tree.item(item)
                 self.tree.delete(item)
                 if float(search_var['values'][2]) < 1:
@@ -195,11 +198,12 @@ class Product:
 
     def update_table(self):
         '''fucion atualizar tabla'''
-        self.destroy_window()
+        self.total.set(value=0)
         records = self.tree.get_children()
         for element in records:
             self.tree.delete(element)
-        query = 'select id, code, name, quantity, price_buy, ganancia, price_sales, location from product order by name desc'
+        query = '''select id, code, name, quantity, price_buy, ganancia,
+        price_sales, location from product order by name desc'''
         db_rows = database.run_query_mariadb(query)
         i = 0
         for row in db_rows:
@@ -210,19 +214,23 @@ class Product:
             style.configure('border_color', background='black')
             if row[3] < 1:
                 self.tree.insert('', 0, text=str(i), values=(
-                    row[1], row[2], row[3], row[4], row[5], row[6], row[7]), tags='bg_red')
+                    row[1], row[2], row[3], row[4], row[5], row[6], row[7]),
+                    tags='bg_red')
                 self.tree.tag_configure('bg_red', background='red')
             elif row[3] > 1:
                 self.tree.insert('', 0, text=str(i), values=(
-                    row[1], row[2], row[3], row[4], row[5], row[6], row[7]), tags='bg_green')
+                    row[1], row[2], row[3], row[4], row[5], row[6], row[7]),
+                    tags='bg_green')
                 self.tree.tag_configure('bg_green', background='#48E120')
             else:
                 self.tree.insert('', 0, text=str(i), values=(
-                    row[1], row[2], row[3], row[4], row[5], row[6], row[7]), tags='bg_yellow')
+                    row[1], row[2], row[3], row[4], row[5], row[6], row[7]),
+                    tags='bg_yellow')
                 self.tree.tag_configure('bg_yellow', background='yellow')
 
     def update_table_sales(self):
         '''funcion atualizar tabla de salida'''
+        self.total_exit.set(value=0)
         records = self.troo.get_children()
         for element in records:
             self.troo.delete(element)
@@ -230,6 +238,7 @@ class Product:
         db_rows = database.run_query_mariadb(query)
         for row in db_rows:
             self.total_exit.set(self.total_exit.get() + (row[2] * row[3]))
+            self.total_exit_show.set(format(self.total_exit.get(), ','))
             self.troo.insert('', 0, text=row[1], values=(row[2], row[3]))
 
     def validation(self):
@@ -246,15 +255,20 @@ class Product:
 
     def add_product(self):
         '''funcion agregar producto al inventario'''
-        self.destroy_window()
         if self.validation():
             option = self.validation_duplicate()
             if option == 1:
                 try:
-                    query = 'insert into product (code, name, price_buy, quantity, ganancia, price_sales, location) values (%s, %s, %s, %s, %s, %s, %s)'
-                    parameters = (self.code.get(), self.name.get().upper(), self.price.get(), self.cantidad.get(), self.gain.get(), float(self.price.get()) * (1 + (float(self.gain.get())/100)), self.location.get())
+                    query = '''insert into product (code, name, price_buy,
+                    quantity, ganancia, price_sales, location) values
+                    (%s, %s, %s, %s, %s, %s, %s)'''
+                    parameters = (
+                        self.code.get(), self.name.get().upper(),
+                        self.price.get(), self.cantidad.get(), self.gain.get(),
+                        float(self.price.get()) * (1 + (float(
+                            self.gain.get())/100)), self.location.get())
                     database.run_query_mariadb_edit(query, parameters)
-                    self.message['text'] = f'Producto {self.name.get()} fue agregado'
+                    self.message['text'] = f'{self.name.get()} agregado'
                     self.name.delete(0, tk.END)
                     self.price.delete(0, tk.END)
                     self.cantidad.delete(0, tk.END)
@@ -262,7 +276,7 @@ class Product:
                     self.code.delete(0, tk.END)
                     self.update_table()
                 except sqlite3.IntegrityError:
-                    self.message['text'] = f'Producto {self.name.get()} esta incluido en el inventario'
+                    self.message['text'] = f'{self.name.get()} esta incluido'
             if option == 2:
                 self.message['text'] = 'Verificar que los datos sean correctos'
         else:
@@ -284,7 +298,8 @@ class Product:
             self.message_sales['text'] = 'No hay suficiente producto.'
         elif cantidad >= int(self.quality_exit.get()):
             try:
-                query = 'insert into sales (name, quantity, price) values (%s, %s, %s)'
+                query = '''insert into sales (name, quantity, price)
+                values (%s, %s, %s)'''
                 name = self.tree.item(id_data)['values'][1]
                 quantity = self.quality_exit.get()
                 price = self.tree.item(id_data)['values'][5]
@@ -294,12 +309,12 @@ class Product:
                 self.update_table_sales()
             except database.maria.errors.IntegrityError as err:
                 if err == database.maria.errorcode.ER_DUP_ENTRY:
-                    self.message_sales['text'] = f'{err}: ya se encuentra en agregado.'
+                    self.message_sales['text'] = f'''{err}: ya se encuentra
+                    en agregado.'''
                 self.message_sales['text'] = f'{err}'
 
     def delete_product(self, id_data):
         '''funcion delete product'''
-        self.destroy_window()
         self.message['text'] = ''
         try:
             self.tree.item(id_data)['values'][1]
@@ -325,18 +340,18 @@ class Product:
         name = self.troo.item(id_data)['text']
         query = 'DELETE FROM sales WHERE name = %s'
         database.run_query_mariadb_edit(query, (name,))
-        self.message_sales['text'] = f'El dato {name} fue eliminado correctamente'
+        self.message_sales['text'] = f'{name} fue eliminado correctamente'
         self.update_table_sales()
 
     def confirm_authorization(self, option):
         '''funcion confirmar contraseña'''
-        self.destroy_window()
         self.authorization_wind = tk.Toplevel()
         self.authorization_wind.geometry('500x210')
         self.authorization_wind.resizable(False, False)
         tk.Label(self.authorization_wind, text='contraseña principal').pack()
-        clave = tk.Entry(self.authorization_wind,
-                         textvariable=tk.StringVar(self.authorization_wind, value=''), show='*')
+        clave = tk.Entry(
+            self.authorization_wind, textvariable=tk.StringVar(
+                self.authorization_wind, value=''), show='*')
         clave.pack()
         clave.focus()
         tk.Button(self.authorization_wind, text='Ingresar',
@@ -358,7 +373,6 @@ class Product:
 
     def edit_product(self, id_data):
         '''funcion editar producto'''
-        self.destroy_window()
         self.message['text'] = ''
         try:
             self.tree.item(id_data)['text'][0]
@@ -372,134 +386,143 @@ class Product:
         old_ganancia = self.tree.item(id_data)['values'][4]
         old_price_sales = self.tree.item(id_data)['values'][5]
         old_location = self.tree.item(id_data)['values'][6]
-        self.edit_wind = tk.Toplevel()
-        self.edit_wind.geometry('500x500')
-        self.edit_wind.resizable(False, False)
-        tk.Label(self.edit_wind, text='Nombre').grid(row=0, column=1)
-        tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind, value=old_name),
+        edit_wind = tk.Toplevel()
+        edit_wind.geometry('500x500')
+        edit_wind.resizable(False, False)
+        tk.Label(edit_wind, text='Nombre').grid(row=0, column=1)
+        tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_name),
                  state='readonly').grid(row=0, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Nuevo nombre').grid(row=1, column=1)
-        new_name = tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind,
-                                                                      value=old_name))
+        tk.Label(edit_wind, text='Nuevo nombre').grid(row=1, column=1)
+        new_name = tk.Entry(
+            edit_wind, textvariable=tk.StringVar(
+                edit_wind, value=old_name))
         new_name.grid(row=1, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Precio compra').grid(
+        tk.Label(edit_wind, text='Precio compra').grid(
             row=2, column=1)
-        tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind, value=old_price_buy),
-                 state='readonly').grid(row=2, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Nuevo precio').grid(row=3, column=1)
-        new_price_buy = tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind,
-                                                                           value=old_price_buy))
+        tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_price_buy), state='readonly').grid(
+                row=2, column=2, ipadx=100)
+        tk.Label(edit_wind, text='Nuevo precio').grid(row=3, column=1)
+        new_price_buy = tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_price_buy))
         new_price_buy.grid(row=3, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Cantidad').grid(row=4, column=1)
-        tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind, value=old_quantity),
-                 state='readonly').grid(row=4, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Nueva cantidad').grid(row=5, column=1)
-        new_quantity = tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind,
-                                                                          value=old_quantity))
+        tk.Label(edit_wind, text='Cantidad').grid(row=4, column=1)
+        tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_quantity), state='readonly').grid(
+                row=4, column=2, ipadx=100)
+        tk.Label(edit_wind, text='Nueva cantidad').grid(row=5, column=1)
+        new_quantity = tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_quantity))
         new_quantity.grid(row=5, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Código').grid(row=6, column=1)
-        tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind, value=old_code),
-                 state='readonly').grid(row=6, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Nuevo código').grid(row=7, column=1)
-        new_code = tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind,
-                                                                      value=old_code))
+        tk.Label(edit_wind, text='Código').grid(row=6, column=1)
+        tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_code), state='readonly').grid(
+                row=6, column=2, ipadx=100)
+        tk.Label(edit_wind, text='Nuevo código').grid(row=7, column=1)
+        new_code = tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_code))
         new_code.grid(row=7, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Ganancia').grid(row=8, column=1)
-        tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind, value=old_ganancia),
-                 state='readonly').grid(row=8, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Nueva Ganancia').grid(row=9, column=1)
-        new_ganancia = tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind,
-                                                                          value=old_ganancia))
+        tk.Label(edit_wind, text='Ganancia').grid(row=8, column=1)
+        tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_ganancia), state='readonly').grid(
+                row=8, column=2, ipadx=100)
+        tk.Label(edit_wind, text='Nueva Ganancia').grid(row=9, column=1)
+        new_ganancia = tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_ganancia))
         new_ganancia.grid(row=9, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Ubicacion').grid(row=10, column=1)
-        tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind, value=old_location),
-                 state='readonly').grid(row=10, column=2, ipadx=100)
-        tk.Label(self.edit_wind, text='Nueva Ubicacion').grid(row=11, column=1)
-        new_location = tk.Entry(self.edit_wind, textvariable=tk.StringVar(self.edit_wind,
-                                                                          value=old_location))
+        tk.Label(edit_wind, text='Ubicacion').grid(row=10, column=1)
+        tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_location), state='readonly').grid(
+                row=10, column=2, ipadx=100)
+        tk.Label(edit_wind, text='Nueva Ubicacion').grid(row=11, column=1)
+        new_location = tk.Entry(edit_wind, textvariable=tk.StringVar(
+            edit_wind, value=old_location))
         new_location.grid(row=11, column=2, ipadx=100)
-        tk.Button(self.edit_wind, text='Guardar',
-                  command=lambda: self.edit_records(new_name.get(), old_name, new_price_buy.get(),
-                                                    old_price_buy, new_quantity.get(),
-                                                    old_quantity, new_code.get(), old_code,
-                                                    old_ganancia, new_ganancia.get(), old_location,
-                                                    new_location.get(), old_price_sales)).grid(
-                                                        row=15, column=2, sticky=tk.W + tk.E)
+        tk.Button(edit_wind, text='Guardar',
+                  command=lambda: self.edit_records(
+                    new_name.get(), old_name, new_price_buy.get(),
+                    old_price_buy, new_quantity.get(), old_quantity,
+                    new_code.get(), old_code, old_ganancia, new_ganancia.get(),
+                    old_location, new_location.get(), old_price_sales,
+                    edit_wind)).grid(row=15, column=2, sticky=tk.W + tk.E)
 
-    def edit_records(self, new_name, old_name, new_price_buy, old_price_buy,new_quantity,
-                     old_quantity, new_code, old_code, old_ganancia, new_ganancia, old_location,
-                     new_location, old_price_sales):
+    def edit_records(self, new_name, old_name, new_price_buy, old_price_buy,
+                     new_quantity, old_quantity, new_code, old_code,
+                     old_ganancia, new_ganancia, old_location, new_location,
+                     old_price_sales, edit_wind):
         '''funcion editar productos'''
-        self.destroy_window()
         new_price_sale = float(new_price_buy) * (1 + (float(new_ganancia)/100))
-        query = ('UPDATE product SET code=%s, name=%s, quantity=%s, price_buy=%s, ganancia=%s, '
-                 'price_sales=%s, location=%s WHERE code=%s AND name=%s AND quantity=%s '
-                 'AND price_buy=%s AND ganancia=%s AND price_sales=%s AND location=%s')
-        parameters = (new_code, new_name, new_quantity, new_price_buy, new_ganancia, new_price_sale,
-                      new_location, old_code, old_name, old_quantity, old_price_buy, old_ganancia,
+        query = '''UPDATE product SET code=%s, name=%s, quantity=%s,
+                 price_buy=%s, ganancia=%s, price_sales=%s, location=%s
+                 WHERE code=%s AND name=%s AND quantity=%s AND price_buy=%s
+                 AND ganancia=%s AND price_sales=%s AND location=%s'''
+        parameters = (new_code, new_name, new_quantity, new_price_buy,
+                      new_ganancia, new_price_sale, new_location, old_code,
+                      old_name, old_quantity, old_price_buy, old_ganancia,
                       old_price_sales, old_location)
         database.run_query_mariadb_edit(query, parameters)
+        edit_wind.destroy()
         self.message['text'] = f'El dato {new_name} fue actualizado'
         self.update_table()
 
-    def cobrar(self):
-        '''funcion retirar de inventario'''
-        self.destroy_window()
-        self.cobrar_wind = tk.Toplevel()
-        self.cobrar_wind.geometry('320x200')
-        self.cambio.set(value=0)
-        tk.Label(self.cobrar_wind, text='TOTAL').grid(row=0, column=0)
-        tk.Entry(self.cobrar_wind, textvariable=self.total_exit,
-                 state='readonly').grid(row=0, column=1)
-        tk.Label(self.cobrar_wind, text='Pago').grid(row=1, column=0)
-        self.deposito = tk.Entry(self.cobrar_wind, textvariable=self.total_exit)
-        self.deposito.grid(row=1, column=1)
-        tk.Label(self.cobrar_wind, text='Cambio').grid(row=2, column=0)
-        tk.Entry(self.cobrar_wind, textvariable=self.cambio,
-                 state='readonly').grid(row=2, column=1)
-
-        tk.Button(self.cobrar_wind, text='Retirar', command=self.change_sales).grid(
-            row=3, column=1, sticky=tk.W + tk.E)
+    # def cobrar(self):
+    #   '''funcion retirar de inventario'''
+    #    cobrar_wind = tk.Toplevel()
+    #    cobrar_wind.geometry('320x200')
+    #    self.cambio.set(value=0)
+    #    tk.Label(cobrar_wind, text='TOTAL').grid(row=0, column=0)
+    #    tk.Entry(cobrar_wind, textvariable=self.total_exit,
+    #             state='readonly').grid(row=0, column=1)
+    #    tk.Label(cobrar_wind, text='Pago').grid(row=1, column=0)
+    #    self.deposito = tk.Entry(cobrar_wind,
+    #                             textvariable=self.total_exit)
+    #    self.deposito.grid(row=1, column=1)
+    #    tk.Label(cobrar_wind, text='Cambio').grid(row=2, column=0)
+    #    tk.Entry(cobrar_wind, textvariable=self.cambio,
+    #             state='readonly').grid(row=2, column=1)
+    #    tk.Button(cobrar_wind, text='Retirar',
+    #              command=self.change_sales(
+    #                  cobrar_wind)).grid(row=3, column=1, sticky=tk.W + tk.E)
 
     def change_sales(self):
         '''funcion salida inventario'''
-        self.destroy_window()
-        diferencia = float(self.deposito.get()) - self.total_exit.get()
-        if diferencia >= 0:
-            self.cambio.set(diferencia)
-            store_list = self.tree.get_children()
-            for store_data in store_list:
-                product_store = self.tree.item(store_data)['values'][1]
-                price = self.tree.item(store_data)['values'][3]
-                quantity = self.tree.item(store_data)['values'][2]
-                sales_list = self.troo.get_children()
-                for sales_data in sales_list:
-                    exit_quantity = self.troo.item(sales_data)['values'][0]
-                    sales_product = self.troo.item(sales_data)['text']
-                    if product_store == sales_product:
-                        price = float(price)
-                        quantity = float(quantity)
-                        new_quantity = quantity - float(exit_quantity)
-                        if new_quantity >= 0:
-                            query = ('UPDATE product SET quantity=%s WHERE name=%s')
-                            parameters = (new_quantity, product_store)
-                            database.run_query_mariadb_edit(query, parameters)
-                            self.add_product_history(product_store, price, 'Venta')
-            self.update_table()
-            list_venta = self.troo.get_children()
-            for dato_venta in list_venta:
-                name = self.troo.item(dato_venta)['text']
-                # eliminar el dato seleccionado
-                query = 'DELETE FROM sales WHERE name=%s'
-                database.run_query_mariadb_edit(query, (name,))
-            self.update_table_sales()
-            self.cobrar_wind.destroy()
-        else:
-            messagebox.showwarning('Error', 'Deposite mas dinero')
+        # diferencia = float(self.deposito.get()) - self.total_exit.get()
+        # if diferencia >= 0:
+        #    self.cambio.set(diferencia)
+        store_list = self.tree.get_children()
+        for store_data in store_list:
+            product_store = self.tree.item(store_data)['values'][1]
+            price = self.tree.item(store_data)['values'][3]
+            quantity = self.tree.item(store_data)['values'][2]
+            sales_list = self.troo.get_children()
+            for sales_data in sales_list:
+                exit_quantity = self.troo.item(sales_data)['values'][0]
+                sales_product = self.troo.item(sales_data)['text']
+                if product_store == sales_product:
+                    price = float(price)
+                    quantity = float(quantity)
+                    new_quantity = quantity - float(exit_quantity)
+                    if new_quantity >= 0:
+                        query = (
+                                'UPDATE product SET quantity=%s WHERE name=%s')
+                        parameters = (new_quantity, product_store)
+                        database.run_query_mariadb_edit(query, parameters)
+                        self.add_product_history(product_store, price, 'Venta')
+        self.update_table()
+        list_venta = self.troo.get_children()
+        for dato_venta in list_venta:
+            name = self.troo.item(dato_venta)['text']
+            query = 'DELETE FROM sales WHERE name=%s'
+            database.run_query_mariadb_edit(query, (name,))
+        self.update_table_sales()
+        # else:
+        #   messagebox.showwarning('Error', 'Deposite mas dinero')
 
     def add_product_history(self, name, price, sale):
         '''Funcion agregar producto history'''
-        query = 'insert into history (name, price, date, sale) values (%s, %s, %s, %s)'
+        query = '''insert into history (name, price, date, sale) values
+        (%s, %s, %s, %s)'''
         date = datetime.datetime.now()
         parameters = (name, price, date, sale)
         database.run_query_mariadb_edit(query, parameters)
@@ -514,7 +537,6 @@ class Product:
         dinero = float(dinero)
         self.total_caja.set(dinero)
         date = datetime.datetime.now()
-
         for row in db_rows:
             self.tree_historial.insert(
                 '', 0, text=row[1], values=(row[2], row[4], row[3]))
@@ -535,18 +557,22 @@ class Product:
         self.tree_historial.heading(
             '#2', text='devolución o compra', anchor=tk.CENTER)
         self.tree_historial.heading('#3', text='date', anchor=tk.CENTER)
-        scroll_bar_historial = ttk.Scrollbar(
-            self.wind_historial, orient=tk.VERTICAL, command=self.tree_historial.yview)
+        scroll_bar_historial = ttk.Scrollbar(self.wind_historial,
+                                             orient=tk.VERTICAL,
+                                             command=self.tree_historial.yview)
         scroll_bar_historial.place(x=1050, y=10, width=20, height=300)
         self.tree_historial.configure(yscrollcommand=scroll_bar_historial.set)
         self.update_history(dinero)
         tk.Label(self.wind_historial, text='TOTAL', fg='blue').place(
             x=20, y=340, width=94, height=30)
-        tk.Entry(self.wind_historial, textvariable=self.total_caja, state='readonly', fg='blue').place(
+        tk.Entry(self.wind_historial, textvariable=self.total_caja,
+                 state='readonly', fg='blue').place(
             x=114, y=340, width=94, height=30)
         ttk.Button(self.wind_historial, text='Corte',
-                   command=lambda: self.corte_caja(usuario, self.total_caja, dinero)).place(x=930, y=360, width=94,
-                                                                                            height=30)
+                   command=lambda: self.corte_caja(usuario, self.total_caja,
+                                                   dinero)).place(x=930, y=360,
+                                                                  width=94,
+                                                                  height=30)
 
     def borrar_historial(self, money):
         '''funcion borrar historial'''
@@ -576,69 +602,58 @@ class Product:
         self.password = tk.Entry(frame, textvariable=tk.StringVar(
             windows_add_user, value=''), show='*')
         self.password.grid(row=1, column=1)
-        ttk.Button(
-            frame, text='+', command=lambda: self.add_u(self.user.get(), self.password.get())
-            ).grid(row=2, column=0)
         frame_users = tk.LabelFrame(windows_add_user, text='Usuarios')
         frame_users.place(x=0, y=110, width=500, height=200)
-        self.tree_users = ttk.Treeview(
+        tree_users = ttk.Treeview(
             frame_users, height=2, columns=('user', 'password'))
-        self.tree_users.place(x=0, y=0, width=480, height=130)
-
-        self.tree_users.heading('#0', text='Usuario', anchor=tk.CENTER)
-        self.tree_users.heading('#1', text='Contraseña', anchor=tk.CENTER)
-
-        scrollbarU = ttk.Scrollbar(
+        tree_users.place(x=0, y=0, width=480, height=130)
+        tree_users.heading('#0', text='Usuario', anchor=tk.CENTER)
+        tree_users.heading('#1', text='Contraseña', anchor=tk.CENTER)
+        scrollbar_u = ttk.Scrollbar(
             windows_add_user, orient=tk.VERTICAL, command=self.troo.yview)
-        scrollbarU.place(x=505, y=90, width=30, height=200)
-        self.tree_users.configure(yscrollcommand=scrollbarU.set)
-
-        self.update_table_user()
+        scrollbar_u.place(x=505, y=90, width=30, height=200)
+        tree_users.configure(yscrollcommand=scrollbar_u.set)
+        ttk.Button(
+            frame, text='+', command=lambda: self.add_u(self.user.get(),
+                                                        self.password.get(),
+                                                        tree_users)).grid(
+                                                            row=2, column=0)
+        self.update_table_user(tree_users)
 
         ttk.Button(frame_users, text='Editar').place(
             x=0, y=130, width=240, height=30)
         ttk.Button(frame_users, text='Eliminar').place(
             x=240, y=130, width=240, height=30)
 
-    def update_table_user(self):
+    def update_table_user(self, tree_users):
         '''Funcion tabla usuarios'''
-        records = self.tree_users.get_children()
+        records = tree_users.get_children()
         for element in records:
-            self.tree_users.delete(element)
+            tree_users.delete(element)
 
         query = 'select id, name, password from users'
         db_rows = database.run_query_mariadb(query)
         for row in db_rows:
             password_hide = ['*' * len(row[2])]
-            self.tree_users.insert('', 0, text=row[1], values=password_hide)
+            tree_users.insert('', 0, text=row[1], values=password_hide)
 
-    def add_u(self, user, password):
+    def add_u(self, user, password, tree_users):
         '''Funcion agreager user'''
         self.user.delete(0, tk.END)
         self.password.delete(0, tk.END)
         query = 'insert into users (name, password) values (%s, %s)'
         parameters = (user, password)
         database.run_query_mariadb_edit(query, parameters)
-        self.update_table_user()
-
-    def destroy_window(self):
-        '''funcion destrutora de ventanas'''
-        try:
-            self.edit_wind.destroy()
-        except:
-            try:
-                self.authorization_wind.destroy()
-            except:
-                return
+        self.update_table_user(tree_users)
 
     # CORTE DE CAJA
     def corte_caja(self, usuario, total, dinero):
         '''funcion corte caja'''
-        self.wind_corte_caja = tk.Toplevel()
-        self.wind_corte_caja.geometry('400x200')
-        self.wind_corte_caja.resizable(False, False)
-        self.wind_corte_caja.title('corte')
-        frame = tk.LabelFrame(self.wind_corte_caja, text='Tabla de compras')
+        wind_corte_caja = tk.Toplevel()
+        wind_corte_caja.geometry('400x200')
+        wind_corte_caja.resizable(False, False)
+        wind_corte_caja.title('corte')
+        frame = tk.LabelFrame(wind_corte_caja, text='Tabla de compras')
         frame.place(x=0, y=0, width=400, height=120)
         name_user = tk.StringVar(value=usuario)
         tk.Entry(frame, textvariable=name_user,
@@ -648,18 +663,18 @@ class Product:
         tk.Entry(frame, textvariable=total, fg='blue', state='readonly').place(
             x=162, y=30, width=120, height=30)
         dinero = float(dinero)
-        self.dinero_caja = tk.DoubleVar(value=0)
         self.dinero_caja.set(dinero)
         self.dinero_caja.set(self.total_caja.get() - self.dinero_caja.get())
         tk.Label(frame, text='Dinero ganado', fg='blue').place(
             x=5, y=60, width=141, height=30)
         tk.Entry(frame, textvariable=self.dinero_caja,
-                 fg='blue', state='readonly').place(x=162, y=60, width=120, height=30)
+                 fg='blue', state='readonly').place(x=162, y=60, width=120,
+                                                    height=30)
 
-        ttk.Button(frame, text='cierre', command=lambda: self.save_corte(dinero)).place(x=290, y=60, width=94,
-                                                                                        height=30)
+        ttk.Button(frame, text='cierre', command=lambda: self.save_corte(
+            dinero, wind_corte_caja)).place(x=290, y=60, width=94, height=30)
 
-    def save_corte(self, money):
+    def save_corte(self, money, wind_corte_caja):
         '''Funcion guardar corte'''
         data = 'history'
         if not os.path.exists('history'):
@@ -675,7 +690,8 @@ class Product:
                                date_month + '_' + date_year + '_' + date_hour +
                                '_' + date_minute + '.txt')):
             file = open('history_'+date_day+'_'+date_month+'_'+date_year+'_' +
-                        date_hour+'_'+date_minute+'.txt', 'w', encoding="utf-8")
+                        date_hour+'_'+date_minute+'.txt', 'w',
+                        encoding="utf-8")
             file.write(str(self.user.get()))
             records = self.tree_historial.get_children()
             query = 'select id, name, price, date, sale from history'
@@ -687,16 +703,18 @@ class Product:
             file.write(str(self.dinero_caja.get()))
             file.close()
             shutil.move(
-                'history_' + date_day + '_' + date_month + '_' + date_year + '_' + date_hour + '_' + date_minute +
-                '.txt', data)
+                'history_' + date_day + '_' + date_month + '_' + date_year +
+                '_' + date_hour + '_' + date_minute + '.txt', data)
             self.borrar_historial(money)
+        wind_corte_caja.destroy()
 
     def import_lote(self):
         '''funcion import for  lote'''
         name_file = filedialog.askopenfilename(
             title='Seleccionar un archivo', filetypes=(('csv file', '*.csv'),
-                                                       ('todos los archivos', '*.*')))
-        if name_file!= '':
+                                                       ('todos los archivos',
+                                                        '*.*')))
+        if name_file != '':
             database.csv_import(name_file)
             self.update_table()
 
@@ -704,28 +722,30 @@ class Product:
         '''interfaz de abrir archivo'''
         name_file = filedialog.askopenfilename(
             title='Seleccionar un archivo', filetypes=(('txt file', '*.txt'),
-                                                       ('todos los archivos', '*.*')))
+                                                       ('todos los archivos',
+                                                        '*.*')))
         if name_file != '':
             archivo = open(name_file, 'r', encoding='utf-8')
             text_list = archivo.readlines()
             archivo.close()
-            self.wind_history_old = tk.Toplevel()
-            self.wind_history_old.geometry('820x400')
-            self.wind_history_old.resizable(False, False)
-            self.wind_history_old.title('Historiales pasados')
-            self.tree_old = ttk.Treeview(
-                self.wind_history_old, height=0, columns=0)
-            self.tree_old.place(x=10, y=10, width=800, height=500)
-            self.tree_old.heading(
+            wind_history_old = tk.Toplevel()
+            wind_history_old.geometry('820x400')
+            wind_history_old.resizable(False, False)
+            wind_history_old.title('Historiales pasados')
+            tree_old = ttk.Treeview(
+                wind_history_old, height=0, columns=0)
+            tree_old.place(x=10, y=10, width=800, height=500)
+            tree_old.heading(
                 '#0', text='Ventas del dia', anchor=tk.CENTER)
 
-            self.scroll_bar_old = ttk.Scrollbar(
-                self.wind_history_old, orient=tk.VERTICAL, command=self.tree_old.yview)
-            self.scroll_bar_old.place(x=790, y=10, width=30, height=500)
-            self.tree_old.configure(yscrollcommand=self.scroll_bar_old.set)
+            scroll_bar_old = ttk.Scrollbar(
+                wind_history_old, orient=tk.VERTICAL,
+                command=tree_old.yview)
+            scroll_bar_old.place(x=790, y=10, width=30, height=500)
+            tree_old.configure(yscrollcommand=scroll_bar_old.set)
 
             for row in text_list:
-                self.tree_old.insert('', 0, text=row)
+                tree_old.insert('', 0, text=row)
 
 
 def input_users(user, password, conf_user, conf_password, money, window_pas):
@@ -788,8 +808,9 @@ def main():
     money = tk.Entry(
         window_pas, textvariable=tk.StringVar(window_pas, value='0'))
     money.pack()
-    ttk.Button(window_pas, text='Ingresar', command=lambda: input_users(user.get(
-    ), password.get(), users_box, password_box, money.get(), window_pas)).pack()
+    ttk.Button(window_pas, text='Ingresar', command=lambda: input_users(
+        user.get(), password.get(), users_box, password_box, money.get(),
+        window_pas)).pack()
     window_pas.mainloop()
 
 
