@@ -57,8 +57,8 @@ class Product:
         self.price = tk.Entry(frame, textvariable=tk.DoubleVar(value=''))
         self.price.place(x=600, y=0, width=130)
         tk.Label(frame, text='Cantidad:').place(x=740, y=0)
-        self.cantidad = tk.Entry(frame, textvariable=tk.DoubleVar(value=''))
-        self.cantidad.place(x=800, y=0, width=100)
+        self.quantity = tk.Entry(frame, textvariable=tk.DoubleVar(value=''))
+        self.quantity.place(x=800, y=0, width=100)
         tk.Label(frame, text='Ganancia:').place(x=0, y=30)
         self.gain = tk.Entry(frame, textvariable=tk.DoubleVar(value=30))
         self.gain.place(x=60, y=30, width=30)
@@ -136,7 +136,7 @@ class Product:
             self.wind, orient=tk.VERTICAL, command=self.troo.yview)
         self.scrollbar.place(x=1370, y=20, width=30, height=280)
         self.troo.configure(yscrollcommand=self.scrollbar.set)
-        ttk.Button(text='retirar', command=self.change_sales).place(
+        ttk.Button(text='retirar', command=self.cobrar).place(
             x=1030, y=310, width=100, height=30)
         ttk.Button(text='Eliminar producto', command=lambda:
                    self.delete_exit(self.troo.selection())).place(
@@ -231,6 +231,7 @@ class Product:
     def update_table_sales(self):
         '''funcion atualizar tabla de salida'''
         self.total_exit.set(value=0)
+        self.total_exit_show.set(value=0)
         records = self.troo.get_children()
         for element in records:
             self.troo.delete(element)
@@ -249,7 +250,7 @@ class Product:
 
     def validation_duplicate(self):
         '''funcion validar que los datos sean numeros'''
-        if self.price.get().isdigit() and self.cantidad.get().isdigit():
+        if self.price.get().isdigit() and self.quantity.get().isdigit():
             return 1
         return 2
 
@@ -262,16 +263,20 @@ class Product:
                     query = '''insert into product (code, name, price_buy,
                     quantity, ganancia, price_sales, location) values
                     (%s, %s, %s, %s, %s, %s, %s)'''
-                    parameters = (
-                        self.code.get(), self.name.get().upper(),
-                        self.price.get(), self.cantidad.get(), self.gain.get(),
-                        float(self.price.get()) * (1 + (float(
-                            self.gain.get())/100)), self.location.get())
+                    price = round(float(self.price.get()))
+                    quantity = round(float(self.quantity.get()))
+                    gain = round(float(self.gain.get()))
+                    price_sale = round(price * (1 + (float(gain)/100)))
+                    code = self.code.get().upper()
+                    name = self.name.get().upper()
+                    location = self.location.get()
+                    parameters = (code, name, price, quantity, gain,
+                                  price_sale, location)
                     database.run_query_mariadb_edit(query, parameters)
                     self.message['text'] = f'{self.name.get()} agregado'
                     self.name.delete(0, tk.END)
                     self.price.delete(0, tk.END)
-                    self.cantidad.delete(0, tk.END)
+                    self.quantity.delete(0, tk.END)
                     self.location.delete(0, tk.END)
                     self.code.delete(0, tk.END)
                     self.update_table()
@@ -290,8 +295,7 @@ class Product:
         except IndexError:
             self.message_sales['text'] = 'por favor seleccione un producto.'
             return
-        cantidad = self.tree.item(id_data)['values'][2]
-        cantidad = int(cantidad)
+        cantidad = int(self.tree.item(id_data)['values'][2])
         if not self.quality_exit.get().isdigit():
             self.message_sales['text'] = 'Valor incorrecto en cantidad.'
         elif cantidad < int(self.quality_exit.get()):
@@ -441,10 +445,11 @@ class Product:
         new_location.grid(row=11, column=2, ipadx=100)
         tk.Button(edit_wind, text='Guardar',
                   command=lambda: self.edit_records(
-                    new_name.get(), old_name, new_price_buy.get(),
+                    new_name.get().upper(), old_name, new_price_buy.get(),
                     old_price_buy, new_quantity.get(), old_quantity,
-                    new_code.get(), old_code, old_ganancia, new_ganancia.get(),
-                    old_location, new_location.get(), old_price_sales,
+                    new_code.get().upper(), old_code, old_ganancia,
+                    new_ganancia.get(), old_location,
+                    new_location.get().upper(), old_price_sales,
                     edit_wind)).grid(row=15, column=2, sticky=tk.W + tk.E)
 
     def edit_records(self, new_name, old_name, new_price_buy, old_price_buy,
@@ -466,58 +471,58 @@ class Product:
         self.message['text'] = f'El dato {new_name} fue actualizado'
         self.update_table()
 
-    # def cobrar(self):
-    #   '''funcion retirar de inventario'''
-    #    cobrar_wind = tk.Toplevel()
-    #    cobrar_wind.geometry('320x200')
-    #    self.cambio.set(value=0)
-    #    tk.Label(cobrar_wind, text='TOTAL').grid(row=0, column=0)
-    #    tk.Entry(cobrar_wind, textvariable=self.total_exit,
-    #             state='readonly').grid(row=0, column=1)
-    #    tk.Label(cobrar_wind, text='Pago').grid(row=1, column=0)
-    #    self.deposito = tk.Entry(cobrar_wind,
-    #                             textvariable=self.total_exit)
-    #    self.deposito.grid(row=1, column=1)
-    #    tk.Label(cobrar_wind, text='Cambio').grid(row=2, column=0)
-    #    tk.Entry(cobrar_wind, textvariable=self.cambio,
-    #             state='readonly').grid(row=2, column=1)
-    #    tk.Button(cobrar_wind, text='Retirar',
-    #              command=self.change_sales(
-    #                  cobrar_wind)).grid(row=3, column=1, sticky=tk.W + tk.E)
+    def cobrar(self):
+        '''funcion retirar de inventario'''
+        cobrar_wind = tk.Toplevel()
+        cobrar_wind.geometry('320x200')
+        self.cambio.set(value=0)
+        tk.Label(cobrar_wind, text='TOTAL').grid(row=0, column=0)
+        tk.Entry(cobrar_wind, textvariable=self.total_exit,
+                 state='readonly').grid(row=0, column=1)
+        tk.Label(cobrar_wind, text='Pago').grid(row=1, column=0)
+        self.deposito = tk.Entry(cobrar_wind,
+                                 textvariable=self.total_exit)
+        self.deposito.grid(row=1, column=1)
+        tk.Label(cobrar_wind, text='Cambio').grid(row=2, column=0)
+        tk.Entry(cobrar_wind, textvariable=self.cambio,
+                 state='readonly').grid(row=2, column=1)
+        tk.Button(cobrar_wind, text='Retirar',
+                  command=self.change_sales).grid(
+                      row=3, column=1, sticky=tk.W + tk.E)
 
     def change_sales(self):
         '''funcion salida inventario'''
-        # diferencia = float(self.deposito.get()) - self.total_exit.get()
-        # if diferencia >= 0:
-        #    self.cambio.set(diferencia)
-        store_list = self.tree.get_children()
-        for store_data in store_list:
-            product_store = self.tree.item(store_data)['values'][1]
-            price = self.tree.item(store_data)['values'][3]
-            quantity = self.tree.item(store_data)['values'][2]
-            sales_list = self.troo.get_children()
-            for sales_data in sales_list:
-                exit_quantity = self.troo.item(sales_data)['values'][0]
-                sales_product = self.troo.item(sales_data)['text']
-                if product_store == sales_product:
-                    price = float(price)
-                    quantity = float(quantity)
-                    new_quantity = quantity - float(exit_quantity)
-                    if new_quantity >= 0:
-                        query = (
+        diferencia = float(self.deposito.get()) - self.total_exit.get()
+        if diferencia >= 0:
+            self.cambio.set(diferencia)
+            store_list = self.tree.get_children()
+            for store_data in store_list:
+                product_store = str(self.tree.item(store_data)['values'][1])
+                price = int(self.tree.item(store_data)['values'][3])
+                quantity = int(self.tree.item(store_data)['values'][2])
+                sales_list = self.troo.get_children()
+                for sales_data in sales_list:
+                    exit_quantity = int(
+                        self.troo.item(sales_data)['values'][0])
+                    sales_product = self.troo.item(sales_data)['text']
+                    if product_store == sales_product:
+                        new_quantity = quantity - exit_quantity
+                        if new_quantity >= 0:
+                            query = (
                                 'UPDATE product SET quantity=%s WHERE name=%s')
-                        parameters = (new_quantity, product_store)
-                        database.run_query_mariadb_edit(query, parameters)
-                        self.add_product_history(product_store, price, 'Venta')
-        self.update_table()
-        list_venta = self.troo.get_children()
-        for dato_venta in list_venta:
-            name = self.troo.item(dato_venta)['text']
-            query = 'DELETE FROM sales WHERE name=%s'
-            database.run_query_mariadb_edit(query, (name,))
-        self.update_table_sales()
-        # else:
-        #   messagebox.showwarning('Error', 'Deposite mas dinero')
+                            parameters = (new_quantity, product_store)
+                            database.run_query_mariadb_edit(query, parameters)
+                            self.add_product_history(product_store, price,
+                                                     'Venta')
+            self.update_table()
+            list_venta = self.troo.get_children()
+            for dato_venta in list_venta:
+                name = self.troo.item(dato_venta)['text']
+                query = 'DELETE FROM sales WHERE name=%s'
+                database.run_query_mariadb_edit(query, (name,))
+            self.update_table_sales()
+        else:
+            messagebox.showwarning('Error', 'Deposite mas dinero')
 
     def add_product_history(self, name, price, sale):
         '''Funcion agregar producto history'''
@@ -536,7 +541,6 @@ class Product:
         db_rows = database.run_query_mariadb(query)
         dinero = float(dinero)
         self.total_caja.set(dinero)
-        date = datetime.datetime.now()
         for row in db_rows:
             self.tree_historial.insert(
                 '', 0, text=row[1], values=(row[2], row[4], row[3]))
@@ -693,7 +697,6 @@ class Product:
                         date_hour+'_'+date_minute+'.txt', 'w',
                         encoding="utf-8")
             file.write(str(self.user.get()))
-            records = self.tree_historial.get_children()
             query = 'select id, name, price, date, sale from history'
             db_rows = database.run_query_mariadb(query)
             for row in db_rows:
@@ -752,11 +755,6 @@ def input_users(user, password, conf_user, conf_password, money, window_pas):
     '''funcion entrada de usuarios'''
     window_pas.message = tk.Label(text='', fg='red')
     window_pas.message.pack()
-    # try:
-    #    money = float(money)
-    # except:
-    #    window_pas.message['text'] = 'Ingrese mas dinero'
-    #    return
     i = 0
     for name in conf_user:
         i += 1
