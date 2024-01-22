@@ -6,8 +6,7 @@ import datetime
 import shutil
 import os
 import database
-
-PASSWORD_ROOT = '1234'
+import data
 
 
 class Product:
@@ -166,9 +165,8 @@ class Product:
         for item in item_tree:
             if search == '' and search2 == '':
                 self.update_table()
-            if search in self.tree.item(
-                 item)['values'][1] and search2 in self.tree.item(
-                    item)['values'][1]:
+            search_name = str(self.tree.item(item)['values'][1])
+            if search in search_name and search2 in search_name:
                 search_var = self.tree.item(item)
                 self.tree.delete(item)
                 if float(search_var['values'][2]) < 1:
@@ -267,9 +265,9 @@ class Product:
                     quantity = round(float(self.quantity.get()))
                     gain = round(float(self.gain.get()))
                     price_sale = round(price * (1 + (float(gain)/100)))
-                    code = self.code.get().upper()
-                    name = self.name.get().upper()
-                    location = self.location.get()
+                    code = str(self.code.get().upper())
+                    name = str(self.name.get().upper())
+                    location = str(self.location.get())
                     parameters = (code, name, price, quantity, gain,
                                   price_sale, location)
                     database.run_query_mariadb_edit(query, parameters)
@@ -289,6 +287,7 @@ class Product:
 
     def add_product_exit(self, id_data):
         '''funcion agregar producto salida de inventario'''
+        self.update_table()
         self.message_sales['text'] = ''
         try:
             self.tree.item(id_data)['text']
@@ -364,13 +363,14 @@ class Product:
     def verify_key(self, password, option):
         '''funcion clave de verificacion'''
         self.authorization_wind.destroy()
-        if password == PASSWORD_ROOT:
-            if option == 1:
-                self.delete_product(self.tree.selection())
-            if option == 2:
-                self.import_lote()
-            if option == 3:
-                self.edit_product(self.tree.selection())
+        if password != '':
+            if password == data.PASSWORD_ROOT:
+                if option == 1:
+                    self.delete_product(self.tree.selection())
+                if option == 2:
+                    self.import_lote()
+                if option == 3:
+                    self.edit_product(self.tree.selection())
         else:
             messagebox.showwarning('Error', 'Contraseña incorrecta')
             self.authorization_wind.destroy()
@@ -680,7 +680,7 @@ class Product:
 
     def save_corte(self, money, wind_corte_caja):
         '''Funcion guardar corte'''
-        data = 'history'
+        data_history = 'history'
         if not os.path.exists('history'):
             os.makedirs('history')
 
@@ -690,9 +690,9 @@ class Product:
         date_year = str(date.year)
         date_hour = str(date.hour)
         date_minute = str(date.minute)
-        if not (os.path.exists(data + '/' + 'history_' + date_day + '_' +
-                               date_month + '_' + date_year + '_' + date_hour +
-                               '_' + date_minute + '.txt')):
+        if not (os.path.exists(data_history + '/' + 'history_' + date_day +
+                               '_' + date_month + '_' + date_year + '_' +
+                               date_hour + '_' + date_minute + '.txt')):
             file = open('history_'+date_day+'_'+date_month+'_'+date_year+'_' +
                         date_hour+'_'+date_minute+'.txt', 'w',
                         encoding="utf-8")
@@ -707,7 +707,7 @@ class Product:
             file.close()
             shutil.move(
                 'history_' + date_day + '_' + date_month + '_' + date_year +
-                '_' + date_hour + '_' + date_minute + '.txt', data)
+                '_' + date_hour + '_' + date_minute + '.txt', data_history)
             self.borrar_historial(money)
         wind_corte_caja.destroy()
 
