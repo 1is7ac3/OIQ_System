@@ -1,4 +1,5 @@
 '''modulo tkinter interfaz grafica'''
+import sqlite3
 from tkinter import ttk, messagebox, filedialog
 import tkinter as tk
 import datetime
@@ -289,7 +290,6 @@ class Product:
 
     def add_product_exit(self, id_data):
         '''funcion agregar producto salida de inventario'''
-        self.update_table()
         self.message_sales['text'] = ''
         try:
             self.tree.item(id_data)['text']
@@ -738,7 +738,7 @@ class Product:
     def table_history_old(self):
         '''interfaz de abrir archivo'''
         name_file = filedialog.askopenfilename(
-            title='Seleccionar un archivo', filetypes=(('Csv file', '*.csv'),
+            title='Seleccionar un archivo', filetypes=(('Text file', '*.txt'),
                                                        ('todos los archivos',
                                                         '*.*')))
         if name_file != '':
