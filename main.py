@@ -1,5 +1,4 @@
 '''modulo tkinter interfaz grafica'''
-import sqlite3
 from tkinter import ttk, messagebox, filedialog
 import tkinter as tk
 import datetime
@@ -44,6 +43,9 @@ class Product:
         file_menu.add_command(
             label='Importar Inventario CVS', command=lambda:
             self.confirm_authorization(2))
+        file_menu.add_command(
+            label='Exportar Inventario CVS', command=lambda:
+            self.confirm_authorization(4))
         file_menu.add_separator()
         file_menu.add_command(label='Cerrar sesión', command=self.wind.quit)
         frame = tk.LabelFrame(self.wind, text='Inventario Productos')
@@ -371,6 +373,8 @@ class Product:
                     self.import_lote()
                 if option == 3:
                     self.edit_product(self.tree.selection())
+                if option == 4:
+                    self.export_lote()
         else:
             messagebox.showwarning('Error', 'Contraseña incorrecta')
             self.authorization_wind.destroy()
@@ -721,10 +725,20 @@ class Product:
             database.csv_import(name_file)
             self.update_table()
 
+    def export_lote(self):
+        '''funcion import for  lote'''
+        name_file = filedialog.asksaveasfilename(
+            title='Seleccionar un archivo', filetypes=(('csv file', '*.csv'),
+                                                       ('todos los archivos',
+                                                        '*.*')))
+        if name_file != '':
+            database.csv_export(name_file)
+            self.update_table()
+
     def table_history_old(self):
         '''interfaz de abrir archivo'''
         name_file = filedialog.askopenfilename(
-            title='Seleccionar un archivo', filetypes=(('txt file', '*.txt'),
+            title='Seleccionar un archivo', filetypes=(('Csv file', '*.csv'),
                                                        ('todos los archivos',
                                                         '*.*')))
         if name_file != '':

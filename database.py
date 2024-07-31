@@ -6,6 +6,7 @@ import data
 
 def create_database_mariadb():
     '''funcion crear database inventory'''
+    print(data.db_config_init)
     connection = maria.connect(**data.db_config_init)
     try:
         cursor = connection.cursor()
@@ -154,4 +155,15 @@ def csv_import(file_name):
                 parameters = (new_c, row[3], row[4], price_2,
                               str(row[5].upper()), row[1])
                 run_query_mariadb_edit(query, parameters)
+    csv_file.close()
+
+def csv_export(file_name):
+    '''Funcion export cvs'''
+    with open(file_name, 'w', encoding='utf-8') as csv_file:
+        write = csv.writer(csv_file, delimiter=';')
+        query = '''select id, code, name, quantity, price_buy, ganancia,
+        price_sales, location from product order by name desc'''
+        db_rows =run_query_mariadb(query)
+        for x in db_rows:
+            write.writerow(x)
     csv_file.close()
