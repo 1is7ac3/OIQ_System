@@ -7,9 +7,10 @@ import shutil
 import os
 import database
 import data
+import login
 
 
-class Product:
+class Product():
     """Clase producto"""
 
     def __init__(self, window, user, money):
@@ -50,6 +51,8 @@ class Product:
             command=lambda: self.confirm_authorization(2),)
         file_menu.add_command(label="Exportar Inventario CVS",
                               command=lambda: self.confirm_authorization(4),)
+        file_menu.add_command(label="Cambios en base de datos",
+                              command=database.change)
         file_menu.add_separator()
         file_menu.add_command(label="Cerrar sesión", command=self.wind.quit)
         frame = tk.LabelFrame(self.wind, text="Inventario Productos")
@@ -167,6 +170,9 @@ class Product:
         self.quality_exit = tk.Entry(textvariable=tk.IntVar(value=1))
         self.quality_exit.place(
             x=tree_w+270, y=tree_h+120, width=50, height=30)
+        self.ubic_exit = ttk.Combobox(state="readonly", values=self.ubic)
+        self.ubic_exit.current(0)
+        self.ubic_exit.place(x=tree_w+320, y=tree_h+120, width=70, height=30)
         self.message_sales = tk.Label(text="", fg="black", wraplength=200)
         self.message_sales.place(x=tree_w, y=tree_h+150, width=280, height=50)
         self.update_table_sales()
@@ -253,34 +259,34 @@ class Product:
         records = self.tree.get_children()
         for element in records:
             self.tree.delete(element)
-        query = """select id, code, name, quantity, price_buy, ganancia,
-        price_sales, location from product order by name desc"""
+        query = """select id, code, name, price_buy, ganancia, price_sales,
+        location, location2, location3 from product order by name desc"""
         db_rows = database.run_query_mariadb(query)
         i = 0
         for row in db_rows:
-            self.total.set(self.total.get() + (row[3] * row[4]))
+            q_t = row[6]+row[7]+row[8]
+            self.total.set(self.total.get() + (q_t * row[4]))
             self.total_show.set(format(self.total.get(), ","))
             i += 1
             style = ttk.Style()
             style.configure("border_color", background="black")
-            if row[3] < 1:
+            if q_t < 1:
                 self.tree.insert("", 0, text=str(i),
-                                 values=(row[1], row[2], row[3], row[4],
-                                         row[5], row[6], row[7]),
-                                 tags="bg_red",)
+                                 values=(row[1], row[2], q_t, row[3],
+                                         row[4], row[5], row[6], row[7], row[8]
+                                         ), tags="bg_red",)
                 self.tree.tag_configure("bg_red", background="red")
-            elif row[3] > 1:
+            elif (q_t) > 1:
                 self.tree.insert("", 0, text=str(i),
-                                 values=(row[1], row[2], row[3], row[4],
-                                         row[5], row[6], row[7]),
-                                 tags="bg_green",)
+                                 values=(row[1], row[2], q_t, row[3],
+                                         row[4], row[5], row[6], row[7], row[8]
+                                         ), tags="bg_green",)
                 self.tree.tag_configure("bg_green", background="#48E120")
             else:
                 self.tree.insert("", 0, text=str(i),
-                                 values=(row[1], row[2], row[3], row[4],
-                                         row[5], row[6], row[7]),
-                                 tags="bg_yellow",
-                                 )
+                                 values=(row[1], row[2], q_t, row[3],
+                                         row[4], row[5], row[6], row[7], row[8]
+                                         ), tags="bg_yellow",)
                 self.tree.tag_configure("bg_yellow", background="yellow")
 
     def update_table_sales(self):
@@ -521,44 +527,19 @@ class Product:
             edit_wind, textvariable=tk.StringVar(edit_wind, value=old_location)
         )
         new_location.grid(row=11, column=2, ipadx=100)
-        tk.Button(
-            edit_wind,
-            text="Guardar",
-            command=lambda: self.edit_records(
-                new_name.get().upper(),
-                old_name,
-                new_price_buy.get(),
-                old_price_buy,
-                new_quantity.get(),
-                old_quantity,
-                new_code.get().upper(),
-                old_code,
-                old_ganancia,
-                new_ganancia.get(),
-                old_location,
-                new_location.get().upper(),
-                old_price_sales,
-                edit_wind,
-            ),
-        ).grid(row=15, column=2, sticky=tk.W + tk.E)
+        tk.Button(edit_wind, text="Guardar",
+                  command=lambda: self.edit_records(
+                      new_name.get().upper(), old_name, new_price_buy.get(),
+                      old_price_buy, new_quantity.get(), old_quantity,
+                      new_code.get().upper(), old_code, old_ganancia,
+                      new_ganancia.get(), old_location,
+                      new_location.get().upper(), old_price_sales, edit_wind,),
+                  ).grid(row=15, column=2, sticky=tk.W + tk.E)
 
-    def edit_records(
-        self,
-        new_name,
-        old_name,
-        new_price_buy,
-        old_price_buy,
-        new_quantity,
-        old_quantity,
-        new_code,
-        old_code,
-        old_ganancia,
-        new_ganancia,
-        old_location,
-        new_location,
-        old_price_sales,
-        edit_wind,
-    ):
+    def edit_records(self, new_name, old_name, new_price_buy, old_price_buy,
+                     new_quantity, old_quantity, new_code, old_code,
+                     old_ganancia, new_ganancia, old_location, new_location,
+                     old_price_sales, edit_wind,):
         """funcion editar productos"""
         new_price_sale = float(new_price_buy) * \
             (1 + (float(new_ganancia) / 100))
@@ -613,8 +594,11 @@ class Product:
             store_list = self.tree.get_children()
             for store_data in store_list:
                 product_store = str(self.tree.item(store_data)["values"][1])
-                price = int(self.tree.item(store_data)["values"][3])
-                quantity = int(self.tree.item(store_data)["values"][2])
+                price = int(self.tree.item(store_data)["values"][5])
+                print(self.ubic_exit.current())
+                if self.ubic_exit.current() == 0:
+                    quantity = int(self.tree.item(store_data)["values"][6])
+                    ubica = "location"
                 sales_list = self.troo.get_children()
                 for sales_data in sales_list:
                     exit_quantity = int(
@@ -623,8 +607,8 @@ class Product:
                     if product_store == sales_product:
                         new_quantity = quantity - exit_quantity
                         if new_quantity >= 0:
-                            query = """UPDATE product SET
-                                        quantity=%s WHERE name=%s"""
+                            query = f"""UPDATE product SET
+                                        {ubica}=%s WHERE name=%s"""
                             parameters = (new_quantity, product_store)
                             database.run_query_mariadb_edit(query, parameters)
                             self.add_product_history(
@@ -984,13 +968,12 @@ def main():
     tk.Label(w_pas, text="Dinero en caja").pack()
     money = tk.Entry(w_pas, textvariable=tk.StringVar(w_pas, value="0"))
     money.pack()
-    ttk.Button(
-        w_pas,
-        text="Ingresar",
-        command=lambda: input_users(
-            user.get(), key.get(), users_box, key_box, money.get(), w_pas
-        ),
-    ).pack()
+    ttk.Button(w_pas, text="Ingresar",
+               command=lambda: input_users(
+                   user.get(), key.get(), users_box, key_box, money.get(),
+                   w_pas),).pack()
+    key.bind("<Return>", lambda: input_users(
+        user.get(), key.get(), users_box, key_box, money.get(), w_pas))
     w_pas.mainloop()
 
 
