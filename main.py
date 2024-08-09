@@ -7,7 +7,6 @@ import shutil
 import os
 import database
 import data
-import login
 
 
 class Product():
@@ -79,6 +78,8 @@ class Product():
         self.code.place(x=370, y=30)
         ttk.Button(frame, text="Guardar producto",
                    command=self.add_product).place(x=600, y=30)
+        ttk.Button(frame, text="Atualizar lista",
+                   command=self.update_table).place(x=750, y=30)
         self.message = tk.Label(text="", fg="black")
         self.message.place(x=0, y=80, width=781, height=30)
         tree_w = int(self.s_width / 2)
@@ -417,8 +418,7 @@ class Product():
         clave = tk.Entry(
             self.authorization_wind,
             textvariable=tk.StringVar(self.authorization_wind, value=""),
-            show="*",
-        )
+            show="*",)
         clave.pack()
         clave.focus()
         tk.Button(self.authorization_wind, text="Ingresar",
@@ -547,22 +547,10 @@ class Product():
                  price_buy=%s, ganancia=%s, price_sales=%s, location=%s
                  WHERE code=%s AND name=%s AND quantity=%s AND price_buy=%s
                  AND ganancia=%s AND price_sales=%s AND location=%s"""
-        parameters = (
-            new_code,
-            new_name,
-            new_quantity,
-            new_price_buy,
-            new_ganancia,
-            new_price_sale,
-            new_location,
-            old_code,
-            old_name,
-            old_quantity,
-            old_price_buy,
-            old_ganancia,
-            old_price_sales,
-            old_location,
-        )
+        parameters = (new_code, new_name, new_quantity, new_price_buy,
+                      new_ganancia, new_price_sale, new_location, old_code,
+                      old_name, old_quantity, old_price_buy, old_ganancia,
+                      old_price_sales, old_location,)
         database.run_query_mariadb_edit(query, parameters)
         edit_wind.destroy()
         self.message["text"] = f"El dato {new_name} fue actualizado"
@@ -595,24 +583,30 @@ class Product():
             for store_data in store_list:
                 product_store = str(self.tree.item(store_data)["values"][1])
                 price = int(self.tree.item(store_data)["values"][5])
-                print(self.ubic_exit.current())
                 if self.ubic_exit.current() == 0:
                     quantity = int(self.tree.item(store_data)["values"][6])
                     ubica = "location"
+                elif self.ubic_exit.current() == 1:
+                    quantity = int(self.tree.item(store_data)["values"][7])
+                    ubica = "location2"
+                elif self.ubic_exit.current() == 2:
+                    quantity = int(self.tree.item(store_data)["values"][8])
+                    ubica = "location3"
+
                 sales_list = self.troo.get_children()
                 for sales_data in sales_list:
-                    exit_quantity = int(
-                        self.troo.item(sales_data)["values"][0])
+                    exit_quan = int(self.troo.item(sales_data)["values"][0])
                     sales_product = self.troo.item(sales_data)["text"]
                     if product_store == sales_product:
-                        new_quantity = quantity - exit_quantity
-                        if new_quantity >= 0:
+                        new_quan = quantity - exit_quan
+                        if new_quan >= 0:
                             query = f"""UPDATE product SET
                                         {ubica}=%s WHERE name=%s"""
-                            parameters = (new_quantity, product_store)
+                            parameters = (new_quan, product_store)
                             database.run_query_mariadb_edit(query, parameters)
                             self.add_product_history(
-                                product_store, price, exit_quantity, "Venta")
+                                product_store, price, exit_quan, "Venta")
+
             self.update_table()
             list_venta = self.troo.get_children()
             for dato_venta in list_venta:
@@ -771,26 +765,19 @@ class Product():
         tk.Entry(frame, textvariable=name_user,
                  state="readonly").place(x=5, y=5)
         tk.Label(frame, text="Total de caja", fg="blue").place(
-            x=5, y=30, width=141, height=30
-        )
+            x=5, y=30, width=141, height=30)
         tk.Entry(frame, textvariable=total, fg="blue", state="readonly").place(
-            x=162, y=30, width=120, height=30
-        )
+            x=162, y=30, width=120, height=30)
         dinero = float(dinero)
         self.dinero_caja.set(dinero)
         self.dinero_caja.set(self.total_caja.get() - self.dinero_caja.get())
         tk.Label(frame, text="Dinero ganado", fg="blue").place(
-            x=5, y=60, width=141, height=30
-        )
-        tk.Entry(
-            frame, textvariable=self.dinero_caja, fg="blue", state="readonly"
-        ).place(x=162, y=60, width=120, height=30)
-
-        ttk.Button(
-            frame,
-            text="cierre",
-            command=lambda: self.save_corte(dinero, wind_corte_caja),
-        ).place(x=290, y=60, width=94, height=30)
+            x=5, y=60, width=141, height=30)
+        tk.Entry(frame, textvariable=self.dinero_caja, fg="blue",
+                 state="readonly").place(x=162, y=60, width=120, height=30)
+        ttk.Button(frame, text="cierre",
+                   command=lambda: self.save_corte(dinero, wind_corte_caja),
+                   ).place(x=290, y=60, width=94, height=30)
 
     def save_corte(self, money, wind_corte_caja):
         """Funcion guardar corte"""
