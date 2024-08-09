@@ -155,13 +155,13 @@ def csv_import(file_name):
                     if i[5] == row[0]:
                         query = """UPDATE product SET price_buy=%s,
                         ganancia=%s, price_sales=%s, location=%s,
-                        location2=%s, location3=%s WHERE name=%s"""
+                        location2=%s, location3=%s WHERE code=%s"""
                         price_2 = round(float(row[2]) * (1 + (float(
                             row[3]) / 100)))
                         parameters = (row[2], row[3], price_2,
-                                      round(int(row[4])+int([2])),
-                                      round(int(row[5])+int([3])),
-                                      round(int(row[6])+int([4])))
+                                      round(int(row[4])+int(i[2])),
+                                      round(int(row[5])+int(i[3])),
+                                      round(int(row[6])+int(i[4])), i[5])
                         run_query_mariadb_edit(query, parameters)
     csv_file.close()
 
