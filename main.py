@@ -689,7 +689,7 @@ class Product():
     def add_user(self):
         """funcion agregar usuario"""
         windows_add_user = tk.Toplevel()
-        windows_add_user.geometry("tree_h+170x300")
+        windows_add_user.geometry("300x300")
         windows_add_user.resizable(False, False)
         windows_add_user.title("Características de usuarios")
         frame = tk.LabelFrame(windows_add_user, text="Añadir usuario")
