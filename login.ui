@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>sesion</class>
+ <widget class="QMainWindow" name="sesion">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>C059 [urw]</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Inicio de sesión</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>inventary.ico</normaloff>inventary.ico</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="font">
+    <font>
+     <family>C059 [urw]</family>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="frame">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: rgb(143, 143, 143);
+border-radius: 20px;
+border: 1px;
+</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::NoFrame</enum>
+      </property>
+      <widget class="QLabel" name="l_user">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>110</y>
+         <width>141</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(0, 0, 0);
+background-color: rgba(255, 255, 255, 0);</string>
+       </property>
+       <property name="text">
+        <string>Usuario</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::TextFormat::PlainText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="l_key">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>220</y>
+         <width>131</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <family>Hack Nerd Font</family>
+         <pointsize>14</pointsize>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgba(255, 255, 255, 0);
+color: rgb(0, 0, 0);
+</string>
+       </property>
+       <property name="text">
+        <string>Contraseña</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="i_user">
+       <property name="geometry">
+        <rect>
+         <x>220</x>
+         <y>150</y>
+         <width>201</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(0, 0, 0);
+border-radius: 20px;</string>
+       </property>
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="b_start">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>400</y>
+         <width>171</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	color: rgb(255, 255, 255);
+}
+QPushButton:hover{
+	color: rgb(0, 170, 0);
+}
+</string>
+       </property>
+       <property name="text">
+        <string>Iniciar Sesión</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="b_exit">
+       <property name="geometry">
+        <rect>
+         <x>480</x>
+         <y>400</y>
+         <width>114</width>
+         <height>36</height>
+        </rect>
+       </property>
+       <property name="mouseTracking">
+        <bool>true</bool>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton{
+	color: rgb(255, 255, 255)
+}
+QPushButton:hover{
+	color: rgb(255, 0, 0);
+}</string>
+       </property>
+       <property name="text">
+        <string>Salir</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="i_key">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>260</y>
+         <width>251</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::FocusPolicy::StrongFocus</enum>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(0, 0, 0);
+border-radius: 20px;</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>Ingrese Contraseña</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="user_result">
+       <property name="geometry">
+        <rect>
+         <x>220</x>
+         <y>200</y>
+         <width>211</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 0, 0);
+background-color: rgba(255, 255, 255, 0);</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="buddy">
+        <cstring>i_key</cstring>
+       </property>
+      </widget>
+      <widget class="QLabel" name="key_result">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>310</y>
+         <width>231</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgba(255, 255, 255, 0);
+color: rgb(255, 0, 0);</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <zorder>l_user</zorder>
+      <zorder>l_key</zorder>
+      <zorder>i_user</zorder>
+      <zorder>i_key</zorder>
+      <zorder>user_result</zorder>
+      <zorder>key_result</zorder>
+      <zorder>gridLayoutWidget</zorder>
+      <zorder>b_start</zorder>
+      <zorder>b_exit</zorder>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>i_user</tabstop>
+  <tabstop>i_key</tabstop>
+  <tabstop>b_exit</tabstop>
+  <tabstop>b_start</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>b_exit</sender>
+   <signal>clicked()</signal>
+   <receiver>sesion</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>566</x>
+     <y>430</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>478</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>i_key</sender>
+   <signal>cursorPositionChanged(int,int)</signal>
+   <receiver>i_key</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>374</x>
+     <y>273</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>415</x>
+     <y>277</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
