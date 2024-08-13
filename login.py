@@ -1,8 +1,8 @@
 import sys
 import ui_login
+import ui_inventary
 import database
-import main
-import tkinter as tk
+import PySide6.QtWidgets as Qt
 
 
 class MiApp(ui_login.QMainWindow):
@@ -31,24 +31,173 @@ class MiApp(ui_login.QMainWindow):
         self.ui.key_result.setText("")
         i = 0
         for name in self.users_box:
-            print(self.ui.i_user.currentText())
             if self.ui.i_user.currentText() == name:
                 if self.ui.i_key.text() == self.key_box[i]:
-                    login_app.close()
-                    window = tk.Tk()
-                    screen_width = window.winfo_screenwidth()
-                    screen_height = window.winfo_screenheight()
-                    window.geometry(f"{screen_width}x{screen_height}")
-                    main.Product(window, self.ui.i_user.currentText(), 0)
-                    window.mainloop()
+                    self.hide()
+                    self.window = product()
+                    self.window.show()
                 else:
                     self.ui.key_result.setText("contraseña incorrecta")
                     break
             i += 1
 
 
-if __name__ == "__main__":
+class product(ui_inventary.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.win = ui_inventary.Ui_inventory()
+        self.win.setupUi(self)
+        self.win.action_i.triggered.connect(self.import_lote)
+        self.win.action_e.triggered.connect(self.export_lote)
+        self.win.action_s.triggered.connect(self.close)
+        self.win.action_u.triggered.connect(self.add_user)
+        self.win.b_up.clicked.connect(self.update_list)
+        self.win.b_add.clicked.connect(self.add_product_exit)
+        self.win.b_del.clicked.connect(self.delete_exit)
+        self.win.b_fin.clicked.connect(self.charge)
+        self.update_list()
+        self.update_list_sales()
+
+    def charge(self):
+        ubic = self.win.c_local.currentIndex()
+        if ubic == 0:
+            ubica = "location"
+        elif ubic == 1:
+            ubica = "location2"
+        else:
+            ubica = "location3"
+        qdata = f"""select name, {ubica} from product"""
+        db_rows = database.run_query_mariadb(qdata)
+        for row in db_rows:
+            qdata2 = """select name, quantity from sales"""
+            db_rows2 = database.run_query_mariadb(qdata2)
+            for row2 in db_rows2:
+                if row2[0] == row[0]:
+                    new_qua = row[1]-row2[1]
+                    if new_qua >= 0:
+                        query = f"""UPDATE product SET
+                                        {ubica}=%s WHERE name=%s"""
+                        parameters = (new_qua, row2[0])
+                        database.run_query_mariadb_edit(query, parameters)
+                        query2 = "DELETE FROM sales WHERE name=%s"
+                        database.run_query_mariadb_edit(query2, (row2[0],))
+        self.update_list()
+        self.update_list_sales()
+
+    def import_lote(self):
+        """funcion import for  lote"""
+        name_file = Qt.QFileDialog.getOpenFileName(
+            None, "Abrir archivo", "", "csv file (*.csv)")
+        if name_file[0] != "":
+            database.csv_import(name_file[0])
+            self.update_list()
+
+    def export_lote(self):
+        """funcion import for  lote"""
+        name_file = Qt.QFileDialog.getSaveFileName(
+            None, "Guardar archivo", "", "csv file (*.csv)")
+        if name_file[0] != "":
+            database.csv_export(name_file[0])
+            self.update_list()
+
+    def update_list(self):
+        self.win.tree.clear()
+        query = """select id, code, name, price_buy, ganancia, price_sales,
+            location, location2, location3 from product order by name ASC"""
+        db_rows = database.run_query_mariadb(query)
+        item = []
+        i = 1
+        for row in db_rows:
+            q_t = row[6]+row[7]+row[8]
+            item.append(ui_inventary.QTreeWidgetItem(
+                [str(i), row[1], row[2], str(q_t), str(row[3]), str(row[4]),
+                 str(row[5]), str(row[6]), str(row[7]), str(row[8])]))
+            i += 1
+        self.win.tree.addTopLevelItems(item)
+        i = 0
+        for i in range(self.win.tree.topLevelItemCount()):
+            self.win.tree.resizeColumnToContents(i)
+            i += 1
+        self.win.tree.setCurrentItem(self.win.tree.itemAt(0, 0))
+
+    def update_list_sales(self):
+        self.win.troo.clear()
+        t_exit = 0
+        self.win.t_venta.setText(f"{t_exit}")
+        query = """select id, name, quantity, price from sales"""
+        db_rows = database.run_query_mariadb(query)
+        item = []
+        for row in db_rows:
+            item.append(ui_inventary.QTreeWidgetItem(
+                [row[1], str(row[2]), str(row[3])]))
+            t_exit += row[2]*row[3]
+            self.win.t_venta.setText(f"{t_exit}")
+        self.win.troo.addTopLevelItems(item)
+        for i in range(self.win.troo.topLevelItemCount()):
+            self.win.troo.resizeColumnToContents(i)
+            i += 1
+
+    def add_product_exit(self):
+        self.win.l_info_exit.setText("")
+        try:
+            id_data = self.win.tree.selectedItems()[0]
+        except IndexError:
+            self.win.l_info_exit.setText("por favor seleccione un producto.")
+        if self.win.c_local.currentIndex() == 0:
+            cantidad = int(id_data.text(7))
+        elif self.win.c_local.currentIndex() == 1:
+            cantidad = int(id_data.text(8))
+        else:
+            cantidad = int(id_data.text(9))
+        i_add = int(self.win.i_add.text())
+        if not i_add.is_integer():
+            self.win.l_info_exit.setText("Valor Incorrecto!")
+        elif cantidad < i_add:
+            self.win.l_info_exit.setText("No hay suficiente stock")
+        elif cantidad >= i_add:
+            try:
+                query = """insert into sales (name, quantity, price)
+                values (%s, %s, %s)"""
+                name = id_data.text(2)
+                price = int(id_data.text(6))
+                parameters = (name, i_add, price)
+                database.run_query_mariadb_edit(query, parameters)
+                self.win.l_info_exit.setText(f"Producto {name} fue agregado")
+                self.update_list_sales()
+            except database.maria.errors.IntegrityError as err:
+                self.win.l_info_exit.setText(f"{err}")
+
+    def delete_exit(self, id_data):
+        """función eliminar de salida inventario"""
+        self.win.l_info_exit.setText("")
+        id_data = self.win.troo.selectedItems()
+        try:
+            id_data[0].text(0)
+        except IndexError:
+            self.win.l_info_exit.setText("por favor seleccione un producto")
+            return
+        self.win.l_info_exit.setText("")
+        name = id_data[0].text(0)
+        query = "DELETE FROM sales WHERE name = %s"
+        database.run_query_mariadb_edit(query, (name,))
+        self.win.l_info_exit.setText(f"{name} fue eliminado correctamente")
+        self.update_list_sales()
+
+    def add_user():
+        pass
+
+
+def main():
+    database.create_database_mariadb()
+    database.create_database_users()
+    database.create_table_mariadb()
+    database.create_table_sales_mariadb()
+    database.create_database_history()
     app = ui_login.QApplication(sys.argv)
     login_app = MiApp()
     login_app.show()
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()
