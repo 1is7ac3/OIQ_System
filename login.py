@@ -2,7 +2,8 @@ import sys
 import ui_login
 import ui_inventary
 import database
-import PySide6.QtWidgets as Qt
+import PySide6.QtWidgets as QtW
+import PySide6.QtCore as QtC
 
 
 class MiApp(ui_login.QMainWindow):
@@ -57,6 +58,32 @@ class product(ui_inventary.QMainWindow):
         self.win.b_fin.clicked.connect(self.charge)
         self.update_list()
         self.update_list_sales()
+        self.win.i_fcode.textChanged.connect(self.search_code)
+        self.win.i_fdesc.textChanged.connect(self.search_desc)
+        self.win.i_fdesc2.textChanged.connect(self.search_desc)
+
+    def search_code(self):
+        self.win.tree.clearSelection()
+        for i in range(self.win.tree.topLevelItemCount()):
+            item = self.win.tree.topLevelItem(i)
+            if self.win.i_fcode.text() == "":
+                self.update_list()
+            elif self.win.i_fcode.text() in item.text(1):
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
+
+    def search_desc(self):
+        search_1 = self.win.i_fdesc.text().upper()
+        search_2 = self.win.i_fdesc2.text().upper()
+        for i in range(self.win.tree.topLevelItemCount()):
+            item = self.win.tree.topLevelItem(i)
+            if self.win.i_fdesc.text() == "":
+                self.update_list()
+            elif search_1 in item.text(2) and search_2 in item.text(2):
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
 
     def charge(self):
         ubic = self.win.c_local.currentIndex()
@@ -86,7 +113,7 @@ class product(ui_inventary.QMainWindow):
 
     def import_lote(self):
         """funcion import for  lote"""
-        name_file = Qt.QFileDialog.getOpenFileName(
+        name_file = QtW.QFileDialog.getOpenFileName(
             None, "Abrir archivo", "", "csv file (*.csv)")
         if name_file[0] != "":
             database.csv_import(name_file[0])
@@ -94,7 +121,7 @@ class product(ui_inventary.QMainWindow):
 
     def export_lote(self):
         """funcion import for  lote"""
-        name_file = Qt.QFileDialog.getSaveFileName(
+        name_file = QtW.QFileDialog.getSaveFileName(
             None, "Guardar archivo", "", "csv file (*.csv)")
         if name_file[0] != "":
             database.csv_export(name_file[0])
@@ -102,6 +129,10 @@ class product(ui_inventary.QMainWindow):
 
     def update_list(self):
         self.win.tree.clear()
+        t_inventory = 0
+        locale = QtC.QLocale(QtC.QLocale.Spanish, QtC.QLocale.Chile)
+        self.win.t_inventary.setText(
+            locale.toCurrencyString(t_inventory))
         query = """select id, code, name, price_buy, ganancia, price_sales,
             location, location2, location3 from product order by name ASC"""
         db_rows = database.run_query_mariadb(query)
@@ -112,6 +143,9 @@ class product(ui_inventary.QMainWindow):
             item.append(ui_inventary.QTreeWidgetItem(
                 [str(i), row[1], row[2], str(q_t), str(row[3]), str(row[4]),
                  str(row[5]), str(row[6]), str(row[7]), str(row[8])]))
+            t_inventory += q_t * row[4]
+            self.win.t_inventary.setText(
+                locale.toCurrencyString(t_inventory))
             i += 1
         self.win.tree.addTopLevelItems(item)
         i = 0
@@ -123,7 +157,8 @@ class product(ui_inventary.QMainWindow):
     def update_list_sales(self):
         self.win.troo.clear()
         t_exit = 0
-        self.win.t_venta.setText(f"{t_exit}")
+        locale = QtC.QLocale(QtC.QLocale.Spanish, QtC.QLocale.Chile)
+        self.win.t_venta.setText(locale.toCurrencyString(t_exit))
         query = """select id, name, quantity, price from sales"""
         db_rows = database.run_query_mariadb(query)
         item = []
@@ -131,7 +166,7 @@ class product(ui_inventary.QMainWindow):
             item.append(ui_inventary.QTreeWidgetItem(
                 [row[1], str(row[2]), str(row[3])]))
             t_exit += row[2]*row[3]
-            self.win.t_venta.setText(f"{t_exit}")
+            self.win.t_venta.setText(locale.toCurrencyString(t_exit))
         self.win.troo.addTopLevelItems(item)
         for i in range(self.win.troo.topLevelItemCount()):
             self.win.troo.resizeColumnToContents(i)
