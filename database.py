@@ -4,7 +4,7 @@ import mysql.connector as maria
 import data
 
 
-def create_database_mariadb():
+def create_database():
     """funcion crear database inventory"""
     connection = maria.connect(**data.db_config_init)
     try:
@@ -16,7 +16,7 @@ def create_database_mariadb():
     connection.close()
 
 
-def run_query_mariadb(query, parameters=()):
+def run_query(query, parameters=()):
     """funcion correr busqueda"""
     conn = None
     cursor = None
@@ -37,7 +37,7 @@ def run_query_mariadb(query, parameters=()):
             cursor.close()
 
 
-def run_query_mariadb_edit(query, parameters=()):
+def run_query_edit(query, parameters=()):
     """funcion correr edit"""
     conn = None
     cursor = None
@@ -59,7 +59,7 @@ def run_query_mariadb_edit(query, parameters=()):
             cursor.close()
 
 
-def create_table_mariadb():
+def create_table():
     """funcion crear tablas"""
     connection = maria.Connect(**data.db_config)
     try:
@@ -78,7 +78,7 @@ def create_table_mariadb():
     connection.close()
 
 
-def create_table_sales_mariadb():
+def create_table_sales():
     """funcion crear tablas"""
     connection = maria.Connect(**data.db_config)
     try:
@@ -136,7 +136,9 @@ def csv_import(file_name):
     """Función import cvs"""
     with open(file_name, "r", encoding="utf-8") as csv_file:
         reader = csv.reader(csv_file, delimiter=";")
+        f = 1
         for row in reader:
+            print(f)
             query = """INSERT INTO product (code, name, price_buy, ganancia,
             price_sales, location, location2, location3)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
@@ -145,12 +147,12 @@ def csv_import(file_name):
                           round(float(row[2])), round(float(row[3])),
                           price, round(float(row[4])), round(float(row[5])),
                           round(float(row[6])))
-            result = run_query_mariadb_edit(query, parameters)
+            result = run_query_edit(query, parameters)
             print(result, maria.errorcode.ER_DUP_ENTRY)
             if result == 2:
                 query_db_exist = """select price_buy, ganancia,
                     location, location2, location3, code from product"""
-                db_rows = run_query_mariadb(query_db_exist)
+                db_rows = run_query(query_db_exist)
                 for i in db_rows:
                     if i[5] == row[0]:
                         query = """UPDATE product SET price_buy=%s,
@@ -162,7 +164,8 @@ def csv_import(file_name):
                                       round(int(row[4])+int(i[2])),
                                       round(int(row[5])+int(i[3])),
                                       round(int(row[6])+int(i[4])), i[5])
-                        run_query_mariadb_edit(query, parameters)
+                        run_query_edit(query, parameters)
+            f += 1
     csv_file.close()
 
 
@@ -172,7 +175,7 @@ def csv_export(file_name):
         write = csv.writer(csv_file, delimiter=";")
         query = """select code, name, price_buy, ganancia, location, location2,
         location3 from product order by name desc"""
-        db_rows = run_query_mariadb(query)
+        db_rows = run_query(query)
         for x in db_rows:
             write.writerow(x)
     csv_file.close()
@@ -181,4 +184,4 @@ def csv_export(file_name):
 def change():
     "Change datebase"
     query = """DROP table product"""
-    run_query_mariadb_edit(query)
+    run_query_edit(query)
