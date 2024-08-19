@@ -452,10 +452,10 @@ class Product():
             return
         old_code = self.tree.item(id_data)["values"][0]
         old_name = self.tree.item(id_data)["values"][1]
-        old_quantity = self.tree.item(id_data)["values"][2]
+        old_location2 = self.tree.item(id_data)["values"][7]
         old_price_buy = self.tree.item(id_data)["values"][3]
         old_ganancia = self.tree.item(id_data)["values"][4]
-        old_price_sales = self.tree.item(id_data)["values"][5]
+        old_location3 = self.tree.item(id_data)["values"][8]
         old_location = self.tree.item(id_data)["values"][6]
         edit_wind = tk.Toplevel()
         edit_wind.geometry("500x500")
@@ -466,7 +466,7 @@ class Product():
             textvariable=tk.StringVar(edit_wind, value=old_name),
             state="readonly",
         ).grid(row=0, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Nuevo nombre").grid(row=1, column=1)
+        tk.Label(edit_wind, text="Cambio nombre").grid(row=1, column=1)
         new_name = tk.Entry(
             edit_wind, textvariable=tk.StringVar(edit_wind, value=old_name)
         )
@@ -477,30 +477,30 @@ class Product():
             textvariable=tk.StringVar(edit_wind, value=old_price_buy),
             state="readonly",
         ).grid(row=2, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Nuevo precio").grid(row=3, column=1)
+        tk.Label(edit_wind, text="Cambio precio").grid(row=3, column=1)
         new_price_buy = tk.Entry(
             edit_wind, textvariable=tk.StringVar(
                 edit_wind, value=old_price_buy)
         )
         new_price_buy.grid(row=3, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Cantidad").grid(row=4, column=1)
+        tk.Label(edit_wind, text="Bodega1").grid(row=4, column=1)
         tk.Entry(
             edit_wind,
-            textvariable=tk.StringVar(edit_wind, value=old_quantity),
+            textvariable=tk.StringVar(edit_wind, value=old_location2),
             state="readonly",
         ).grid(row=4, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Nueva cantidad").grid(row=5, column=1)
-        new_quantity = tk.Entry(
-            edit_wind, textvariable=tk.StringVar(edit_wind, value=old_quantity)
-        )
-        new_quantity.grid(row=5, column=2, ipadx=100)
+        tk.Label(edit_wind, text="Cambio Bodega1").grid(row=5, column=1)
+        new_location2 = tk.Entry(
+            edit_wind, textvariable=tk.StringVar(edit_wind,
+                                                 value=old_location2))
+        new_location2.grid(row=5, column=2, ipadx=100)
         tk.Label(edit_wind, text="Código").grid(row=6, column=1)
         tk.Entry(
             edit_wind,
             textvariable=tk.StringVar(edit_wind, value=old_code),
             state="readonly",
         ).grid(row=6, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Nuevo código").grid(row=7, column=1)
+        tk.Label(edit_wind, text="Cambio código").grid(row=7, column=1)
         new_code = tk.Entry(
             edit_wind, textvariable=tk.StringVar(edit_wind, value=old_code)
         )
@@ -511,46 +511,58 @@ class Product():
             textvariable=tk.StringVar(edit_wind, value=old_ganancia),
             state="readonly",
         ).grid(row=8, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Nueva Ganancia").grid(row=9, column=1)
+        tk.Label(edit_wind, text="Cambio Ganancia").grid(row=9, column=1)
         new_ganancia = tk.Entry(
             edit_wind, textvariable=tk.StringVar(edit_wind, value=old_ganancia)
         )
         new_ganancia.grid(row=9, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Ubicacion").grid(row=10, column=1)
+        tk.Label(edit_wind, text="Rendic").grid(row=10, column=1)
         tk.Entry(
             edit_wind,
             textvariable=tk.StringVar(edit_wind, value=old_location),
             state="readonly",
         ).grid(row=10, column=2, ipadx=100)
-        tk.Label(edit_wind, text="Nueva Ubicacion").grid(row=11, column=1)
+        tk.Label(edit_wind, text="Cambio Rendic").grid(row=11, column=1)
         new_location = tk.Entry(
             edit_wind, textvariable=tk.StringVar(edit_wind, value=old_location)
         )
         new_location.grid(row=11, column=2, ipadx=100)
+        tk.Label(edit_wind, text="Bodega2").grid(row=12, column=1)
+        tk.Entry(
+            edit_wind,
+            textvariable=tk.StringVar(edit_wind, value=old_location3),
+            state="readonly",).grid(row=12, column=2, ipadx=100)
+        tk.Label(edit_wind, text="Cambio Bodega2").grid(row=13, column=1)
+        new_location3 = tk.Entry(
+            edit_wind, textvariable=tk.StringVar(edit_wind, value=old_location)
+        )
+        new_location3.grid(row=13, column=2, ipadx=100)
         tk.Button(edit_wind, text="Guardar",
                   command=lambda: self.edit_records(
                       new_name.get().upper(), old_name, new_price_buy.get(),
-                      old_price_buy, new_quantity.get(), old_quantity,
+                      old_price_buy, new_location2.get(), old_location2,
                       new_code.get().upper(), old_code, old_ganancia,
                       new_ganancia.get(), old_location,
-                      new_location.get().upper(), old_price_sales, edit_wind,),
-                  ).grid(row=15, column=2, sticky=tk.W + tk.E)
+                      new_location.get().upper(), old_location3,
+                      new_location3.get(), edit_wind,),
+                  ).grid(row=14, column=2, sticky=tk.W + tk.E)
 
     def edit_records(self, new_name, old_name, new_price_buy, old_price_buy,
-                     new_quantity, old_quantity, new_code, old_code,
+                     new_location2, old_location2, new_code, old_code,
                      old_ganancia, new_ganancia, old_location, new_location,
-                     old_price_sales, edit_wind,):
+                     old_location3, new_location3, edit_wind,):
         """funcion editar productos"""
         new_price_sale = float(new_price_buy) * \
             (1 + (float(new_ganancia) / 100))
-        query = """UPDATE product SET code=%s, name=%s, quantity=%s,
-                 price_buy=%s, ganancia=%s, price_sales=%s, location=%s
-                 WHERE code=%s AND name=%s AND quantity=%s AND price_buy=%s
-                 AND ganancia=%s AND price_sales=%s AND location=%s"""
-        parameters = (new_code, new_name, new_quantity, new_price_buy,
-                      new_ganancia, new_price_sale, new_location, old_code,
-                      old_name, old_quantity, old_price_buy, old_ganancia,
-                      old_price_sales, old_location,)
+        query = """UPDATE product SET code=%s, name=%s, price_buy=%s,
+        ganancia=%s, price_sales=%s, location=%s , location2=%s, location3=%s
+        WHERE code=%s AND name=%s AND price_buy=%s AND ganancia=%s
+        AND location=%s AND location2=%s AND location3=%s"""
+        parameters = (new_code, new_name, new_price_buy, new_ganancia,
+                      new_price_sale, new_location, new_location2,
+                      new_location3, old_code, old_name, old_price_buy,
+                      old_ganancia, old_location, old_location2, old_location3,)
+        print(query, parameters)
         database.run_query_edit(query, parameters)
         edit_wind.destroy()
         self.message["text"] = f"El dato {new_name} fue actualizado"
