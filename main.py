@@ -262,7 +262,7 @@ class Product():
             self.tree.delete(element)
         query = """select id, code, name, price_buy, ganancia, price_sales,
         location, location2, location3 from product order by name desc"""
-        db_rows = database.run_query_mariadb(query)
+        db_rows = database.run_query(query)
         i = 0
         for row in db_rows:
             q_t = row[6]+row[7]+row[8]
@@ -298,7 +298,7 @@ class Product():
         for element in records:
             self.troo.delete(element)
         query = "select id, name, quantity, price from sales"
-        db_rows = database.run_query_mariadb(query)
+        db_rows = database.run_query(query)
         for row in db_rows:
             self.total_exit.set(self.total_exit.get() + (row[2] * row[3]))
             self.total_exit_show.set(format(self.total_exit.get(), ","))
@@ -334,7 +334,7 @@ class Product():
                     location = str(self.location.get())
                     parameters = (code, name, price, quantity, gain,
                                   price_sale, location,)
-                    database.run_query_mariadb_edit(query, parameters)
+                    database.run_query_edit(query, parameters)
                     self.message["text"] = f"{self.name.get()} agregado"
                     self.name.delete(0, tk.END)
                     self.price.delete(0, tk.END)
@@ -370,7 +370,7 @@ class Product():
                 quantity = self.quality_exit.get()
                 price = self.tree.item(id_data)["values"][5]
                 parameters = (name, quantity, price)
-                database.run_query_mariadb_edit(query, parameters)
+                database.run_query_edit(query, parameters)
                 self.message_sales["text"] = f"Producto {name} fue agregado"
                 self.update_table_sales()
             except database.maria.errors.IntegrityError as err:
@@ -390,7 +390,7 @@ class Product():
         self.message["text"] = ""
         name = self.tree.item(id_data)["values"][1]
         query = "DELETE FROM product WHERE name = %s"
-        database.run_query_mariadb_edit(query, (name,))
+        database.run_query_edit(query, (name,))
         self.message["text"] = f"El dato {name} fue eliminado correctamente"
         self.update_table()
 
@@ -405,7 +405,7 @@ class Product():
         self.message_sales["text"] = ""
         name = self.troo.item(id_data)["text"]
         query = "DELETE FROM sales WHERE name = %s"
-        database.run_query_mariadb_edit(query, (name,))
+        database.run_query_edit(query, (name,))
         self.message_sales["text"] = f"{name} fue eliminado correctamente"
         self.update_table_sales()
 
@@ -551,7 +551,7 @@ class Product():
                       new_ganancia, new_price_sale, new_location, old_code,
                       old_name, old_quantity, old_price_buy, old_ganancia,
                       old_price_sales, old_location,)
-        database.run_query_mariadb_edit(query, parameters)
+        database.run_query_edit(query, parameters)
         edit_wind.destroy()
         self.message["text"] = f"El dato {new_name} fue actualizado"
         self.update_table()
@@ -603,7 +603,7 @@ class Product():
                             query = f"""UPDATE product SET
                                         {ubica}=%s WHERE name=%s"""
                             parameters = (new_quan, product_store)
-                            database.run_query_mariadb_edit(query, parameters)
+                            database.run_query_edit(query, parameters)
                             self.add_product_history(
                                 product_store, price, exit_quan, "Venta")
 
@@ -612,7 +612,7 @@ class Product():
             for dato_venta in list_venta:
                 name = self.troo.item(dato_venta)["text"]
                 query = "DELETE FROM sales WHERE name=%s"
-                database.run_query_mariadb_edit(query, (name,))
+                database.run_query_edit(query, (name,))
             self.update_table_sales()
         else:
             messagebox.showwarning("Error", "Deposite mas dinero")
@@ -623,7 +623,7 @@ class Product():
         values(%s, %s, %s, %s, %s)"""
         date = datetime.datetime.now()
         parameters = (name, price, quantity, date, sale)
-        database.run_query_mariadb_edit(query, parameters)
+        database.run_query_edit(query, parameters)
 
     def update_history(self, dinero):
         """Funcion atualizar historial"""
@@ -631,7 +631,7 @@ class Product():
         for element in records:
             self.tree_historial.delete(element)
         query = "select id, name, price, date, sale from history"
-        db_rows = database.run_query_mariadb(query)
+        db_rows = database.run_query(query)
         dinero = float(dinero)
         self.total_caja.set(dinero)
         for row in db_rows:
@@ -683,7 +683,7 @@ class Product():
         for element in records:
             name = self.tree_historial.item(element)["text"]
             query = "DELETE FROM history WHERE name=%s"
-            database.run_query_mariadb_edit(query, (name,))
+            database.run_query_edit(query, (name,))
         self.update_history(money)
 
     def add_user(self):
@@ -738,7 +738,7 @@ class Product():
             tree_users.delete(element)
 
         query = "select id, name, password from users"
-        db_rows = database.run_query_mariadb(query)
+        db_rows = database.run_query(query)
         for row in db_rows:
             key_hide = ["*" * len(row[2])]
             tree_users.insert("", 0, text=row[1], values=key_hide)
@@ -749,7 +749,7 @@ class Product():
         self.key.delete(0, tk.END)
         query = "insert into users (name, password) values (%s, %s)"
         parameters = (user, key)
-        database.run_query_mariadb_edit(query, parameters)
+        database.run_query_edit(query, parameters)
         self.update_table_user(tree_users)
 
     # CORTE DE CAJA
@@ -825,7 +825,7 @@ class Product():
             )
             file.write(str(self.user.get()))
             query = "select id, name, price, date, sale from history"
-            db_rows = database.run_query_mariadb(query)
+            db_rows = database.run_query(query)
             for row in db_rows:
                 file.write(":\n")
                 file.write(str(row))
@@ -921,10 +921,10 @@ def input_users(user, key, conf_user, conf_key, money, w_pas):
 
 def main():
     """funcion principal"""
-    database.create_database_mariadb()
+    database.create_database()
     database.create_database_users()
-    database.create_table_mariadb()
-    database.create_table_sales_mariadb()
+    database.create_table()
+    database.create_table_sales()
     database.create_database_history()
     w_pas = tk.Tk()
     screen_width_init = int(w_pas.winfo_screenwidth() / 4)
@@ -933,7 +933,7 @@ def main():
     w_pas.title("Inicio Sesión")
     w_pas.resizable(False, False)
     query = "select id, name, password from users"
-    db_rows = database.run_query_mariadb(query)
+    db_rows = database.run_query(query)
     users_box = ["admin"]
     key_box = ["admin"]
 
