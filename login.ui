@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
+    <width>635</width>
     <height>480</height>
    </rect>
   </property>
@@ -51,7 +51,7 @@
        <bool>true</bool>
       </property>
       <property name="styleSheet">
-       <string notr="true">background: rgb(143, 143, 143);
+       <string notr="true">background: rgb(41, 45, 50);
 border-radius: 20px;
 border: 1px;
 </string>
@@ -75,7 +75,7 @@ border: 1px;
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(0, 0, 0);
+        <string notr="true">color: rgb(255, 255, 255);
 background-color: rgba(255, 255, 255, 0);</string>
        </property>
        <property name="text">
@@ -112,7 +112,7 @@ background-color: rgba(255, 255, 255, 0);</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: rgba(255, 255, 255, 0);
-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
 </string>
        </property>
        <property name="text">
@@ -287,10 +287,10 @@ background-color: rgba(255, 255, 255, 0);</string>
       <widget class="QLabel" name="key_result">
        <property name="geometry">
         <rect>
-         <x>200</x>
-         <y>310</y>
-         <width>231</width>
-         <height>20</height>
+         <x>0</x>
+         <y>320</y>
+         <width>631</width>
+         <height>41</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -298,7 +298,10 @@ background-color: rgba(255, 255, 255, 0);</string>
 color: rgb(255, 0, 0);</string>
        </property>
        <property name="text">
-        <string/>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
       </widget>
       <zorder>l_user</zorder>
@@ -307,7 +310,6 @@ color: rgb(255, 0, 0);</string>
       <zorder>i_key</zorder>
       <zorder>user_result</zorder>
       <zorder>key_result</zorder>
-      <zorder>gridLayoutWidget</zorder>
       <zorder>b_start</zorder>
       <zorder>b_exit</zorder>
      </widget>
