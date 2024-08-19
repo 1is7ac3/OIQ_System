@@ -1,4 +1,6 @@
+from datetime import datetime
 import sys
+import data
 import ui_login
 import ui_inventary
 import database
@@ -16,13 +18,27 @@ class MiApp(ui_login.QMainWindow):
         # transparente
         self.setAttribute(ui_login.Qt.WA_TranslucentBackground)
         self.ui.b_start.clicked.connect(self.sesion)
-        query = "select id, name, password from users"
-        db_rows = database.run_query_mariadb(query)
-        self.users_box = ["admin"]
-        self.key_box = ["admin"]
+        query = "select name, password from users"
+        db_rows = database.run_query(query)
+        self.users_box = []
+        self.key_box = []
+        self.int = 1
         for row in db_rows:
-            self.users_box.append(row[1])
-            self.key_box.append(row[2])
+            self.users_box.append(row[0])
+            self.key_box.append(row[1])
+        if len(self.users_box) < 1:
+            i_query = "insert into users (name,password) values (%s,%s)"
+            user = QtW.QInputDialog.getText(
+                None, "Inicializacion", "Introduzca nuevo usuario:")
+            key = QtW.QInputDialog.getText(
+                None, "Inicializacion", "contraseña:", QtW.QLineEdit.Password)
+            i_parameters = (user[0], key[0])
+            database.run_query_edit(i_query, i_parameters)
+            query = "select name, password from users"
+            db_rows = database.run_query(query)
+            for row in db_rows:
+                self.users_box.append(row[0])
+                self.key_box.append(row[1])
         self.ui.i_user.addItems(self.users_box)
         self.ui.i_user.setCurrentIndex(0)
         self.ui.i_key.setFocus()
@@ -30,26 +46,26 @@ class MiApp(ui_login.QMainWindow):
 
     def sesion(self):
         self.ui.key_result.setText("")
-        i = 0
-        for name in self.users_box:
-            if self.ui.i_user.currentText() == name:
-                if self.ui.i_key.text() == self.key_box[i]:
-                    self.hide()
-                    self.window = product()
-                    self.window.show()
-                else:
-                    self.ui.key_result.setText("contraseña incorrecta")
-                    break
-            i += 1
+        i = self.ui.i_user.currentIndex()
+        if self.ui.i_key.text() == self.key_box[i]:
+            self.hide()
+            self.window = product(self.key_box[i])
+            self.window.show()
+        elif self.int < 3:
+            self.ui.key_result.setText(f"Contraseña incorrecta {self.int}/3")
+            self.int += 1
+        else:
+            self.close()
+            # i += 1
 
 
 class product(ui_inventary.QMainWindow):
-    def __init__(self):
+    def __init__(self, user):
         super().__init__()
         self.win = ui_inventary.Ui_inventory()
         self.win.setupUi(self)
-        self.win.action_i.triggered.connect(self.import_lote)
-        self.win.action_e.triggered.connect(self.export_lote)
+        self.win.action_i.triggered.connect(lambda: self.auth(2))
+        self.win.action_e.triggered.connect(lambda: self.auth(4))
         self.win.action_s.triggered.connect(self.close)
         self.win.action_u.triggered.connect(self.add_user)
         self.win.b_up.clicked.connect(self.update_list)
@@ -94,10 +110,10 @@ class product(ui_inventary.QMainWindow):
         else:
             ubica = "location3"
         qdata = f"""select name, {ubica} from product"""
-        db_rows = database.run_query_mariadb(qdata)
+        db_rows = database.run_query(qdata)
         for row in db_rows:
-            qdata2 = """select name, quantity from sales"""
-            db_rows2 = database.run_query_mariadb(qdata2)
+            qdata2 = """select name, quantity, price from sales"""
+            db_rows2 = database.run_query(qdata2)
             for row2 in db_rows2:
                 if row2[0] == row[0]:
                     new_qua = row[1]-row2[1]
@@ -105,11 +121,20 @@ class product(ui_inventary.QMainWindow):
                         query = f"""UPDATE product SET
                                         {ubica}=%s WHERE name=%s"""
                         parameters = (new_qua, row2[0])
-                        database.run_query_mariadb_edit(query, parameters)
+                        self.add_history(row2[0], row2[1], row2[2], "Venta")
+                        database.run_query_edit(query, parameters)
                         query2 = "DELETE FROM sales WHERE name=%s"
-                        database.run_query_mariadb_edit(query2, (row2[0],))
+                        database.run_query_edit(query2, (row2[0],))
         self.update_list()
         self.update_list_sales()
+
+    def add_history(self, name, quantity, price, sale):
+        """Funcion agregar producto history"""
+        query = """insert into history (name, price, quantity, date, sale)
+        values(%s, %s, %s, %s, %s)"""
+        date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        parameters = (name, price, quantity, date, sale)
+        database.run_query_edit(query, parameters)
 
     def import_lote(self):
         """funcion import for  lote"""
@@ -127,6 +152,23 @@ class product(ui_inventary.QMainWindow):
             database.csv_export(name_file[0])
             self.update_list()
 
+    def auth(self, option):
+        key = QtW.QInputDialog.getText(None, "Autorizacion",
+                                       "Ingrese Contraseña:",
+                                       QtW.QLineEdit.Password)
+        print(key[0])
+        if key[0] == data.PASSWORD_ROOT:
+            if option == 1:
+                self.delete_product(self.tree.selection())
+            if option == 2:
+                self.import_lote()
+            if option == 3:
+                self.edit_product(self.tree.selection())
+            if option == 4:
+                self.export_lote()
+        else:
+            QtW.QMessageBox.warning(None, "Error", "Contraseña Incorrecta")
+
     def update_list(self):
         self.win.tree.clear()
         t_inventory = 0
@@ -135,7 +177,7 @@ class product(ui_inventary.QMainWindow):
             locale.toCurrencyString(t_inventory))
         query = """select id, code, name, price_buy, ganancia, price_sales,
             location, location2, location3 from product order by name ASC"""
-        db_rows = database.run_query_mariadb(query)
+        db_rows = database.run_query(query)
         item = []
         i = 1
         for row in db_rows:
@@ -160,7 +202,7 @@ class product(ui_inventary.QMainWindow):
         locale = QtC.QLocale(QtC.QLocale.Spanish, QtC.QLocale.Chile)
         self.win.t_venta.setText(locale.toCurrencyString(t_exit))
         query = """select id, name, quantity, price from sales"""
-        db_rows = database.run_query_mariadb(query)
+        db_rows = database.run_query(query)
         item = []
         for row in db_rows:
             item.append(ui_inventary.QTreeWidgetItem(
@@ -196,7 +238,7 @@ class product(ui_inventary.QMainWindow):
                 name = id_data.text(2)
                 price = int(id_data.text(6))
                 parameters = (name, i_add, price)
-                database.run_query_mariadb_edit(query, parameters)
+                database.run_query_edit(query, parameters)
                 self.win.l_info_exit.setText(f"Producto {name} fue agregado")
                 self.update_list_sales()
             except database.maria.errors.IntegrityError as err:
@@ -214,19 +256,25 @@ class product(ui_inventary.QMainWindow):
         self.win.l_info_exit.setText("")
         name = id_data[0].text(0)
         query = "DELETE FROM sales WHERE name = %s"
-        database.run_query_mariadb_edit(query, (name,))
+        database.run_query_edit(query, (name,))
         self.win.l_info_exit.setText(f"{name} fue eliminado correctamente")
         self.update_list_sales()
 
     def add_user():
-        pass
+        query = "insert into users (name, password) values (%s,%s)"
+        user = QtW.QInputDialog.getText(
+            None, "Inicializacion", "Introduzca nuevo usuario:")
+        key = QtW.QInputDialog.getText(
+            None, "Inicializacion", "contraseña:", QtW.QLineEdit.Password)
+        parameters = (user, key)
+        database.run_query_edit(query, parameters)
 
 
 def main():
-    database.create_database_mariadb()
+    database.create_database()
     database.create_database_users()
-    database.create_table_mariadb()
-    database.create_table_sales_mariadb()
+    database.create_table()
+    database.create_table_sales()
     database.create_database_history()
     app = ui_login.QApplication(sys.argv)
     login_app = MiApp()
