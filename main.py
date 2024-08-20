@@ -328,18 +328,32 @@ class Product():
             option = self.validation_duplicate()
             if option == 1:
                 try:
-                    query = """insert into product (code, name, price_buy,
-                    quantity, ganancia, price_sales, location) values
-                    (%s, %s, %s, %s, %s, %s, %s)"""
                     price = round(float(self.price.get()))
                     quantity = round(float(self.quantity.get()))
                     gain = round(float(self.gain.get()))
                     price_sale = round(price * (1 + (float(gain) / 100)))
                     code = str(self.code.get().upper())
                     name = str(self.name.get().upper())
-                    location = str(self.location.get())
-                    parameters = (code, name, price, quantity, gain,
-                                  price_sale, location,)
+                    location = self.location.current()
+                    print(self.location.current())
+                    if location == 0:
+                        query = """insert into product (code, name, price_buy,
+                    ganancia, price_sales, location ,location2, location3)
+                    values (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                        parameters = (code, name, price, gain, price_sale,
+                                      quantity, 0, 0)
+                    elif location == 1:
+                        query = """insert into product (code, name, price_buy,
+                    ganancia, price_sales, location ,location2, location3)
+                    values (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                        parameters = (code, name, price, gain, price_sale, 0,
+                                      quantity, 0)
+                    elif location == 2:
+                        query = """insert into product (code, name, price_buy,
+                    ganancia, price_sales, location ,location2, location3)
+                    values (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                        parameters = (code, name, price, gain, price_sale, 0,
+                                      0, quantity)
                     database.run_query_edit(query, parameters)
                     self.message["text"] = f"{self.name.get()} agregado"
                     self.name.delete(0, tk.END)
@@ -348,7 +362,7 @@ class Product():
                     self.location.delete(0, tk.END)
                     self.code.delete(0, tk.END)
                     self.update_table()
-                except sqlite3.IntegrityError:
+                except database.maria.errors.IntegrityError:
                     self.message["text"] = f"{self.name.get()} esta incluido"
             if option == 2:
                 self.message["text"] = "Verificar que los datos sean correctos"
