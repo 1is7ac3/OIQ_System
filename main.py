@@ -202,21 +202,24 @@ class Product():
                         search_var["values"][0], search_var["values"][1],
                         search_var["values"][2], search_var["values"][3],
                         search_var["values"][4], search_var["values"][5],
-                        search_var["values"][6],), tags="bg_red",)
+                        search_var["values"][6], search_var["values"][7],
+                        search_var["values"][8],), tags="bg_red",)
                     self.tree.tag_configure("bg_red", background="red")
                 elif float(search_var["values"][2]) > 1:
                     self.tree.insert("", 0, text=search_var["text"], values=(
                         search_var["values"][0], search_var["values"][1],
                         search_var["values"][2], search_var["values"][3],
                         search_var["values"][4], search_var["values"][5],
-                        search_var["values"][6],), tags="bg_green",)
+                        search_var["values"][6], search_var["values"][7],
+                        search_var["values"][8],), tags="bg_green",)
                     self.tree.tag_configure("bg_green", background="#48E120")
                 else:
                     self.tree.insert("", 0, text=search_var["text"], values=(
                         search_var["values"][0], search_var["values"][1],
                         search_var["values"][2], search_var["values"][3],
                         search_var["values"][4], search_var["values"][5],
-                        search_var["values"][6],), tags="bg_yellow",)
+                        search_var["values"][6], search_var["values"][7],
+                        search_var["values"][8],), tags="bg_yellow",)
                     self.tree.tag_configure("bg_yellow", background="yellow")
             self.tree.selection_set(self.tree.get_children()[0])
 
@@ -236,21 +239,24 @@ class Product():
                         search_var["values"][0], search_var["values"][1],
                         search_var["values"][2], search_var["values"][3],
                         search_var["values"][4], search_var["values"][5],
-                        search_var["values"][6],), tags="bg_red",)
+                        search_var["values"][6], search_var["values"][7],
+                        search_var["values"][8],), tags="bg_red",)
                     self.tree.tag_configure("bg_red", background="red")
                 elif float(search_var["values"][2]) > 1:
                     self.tree.insert("", 0, text=search_var["text"], values=(
                         search_var["values"][0], search_var["values"][1],
                         search_var["values"][2], search_var["values"][3],
                         search_var["values"][4], search_var["values"][5],
-                        search_var["values"][6],), tags="bg_green",)
+                        search_var["values"][6], search_var["values"][7],
+                        search_var["values"][8],), tags="bg_green",)
                     self.tree.tag_configure("bg_green", background="#48E120")
                 else:
                     self.tree.insert("", 0, text=search_var["text"], values=(
                         search_var["values"][0], search_var["values"][1],
                         search_var["values"][2], search_var["values"][3],
                         search_var["values"][4], search_var["values"][5],
-                        search_var["values"][6],), tags="bg_yellow",)
+                        search_var["values"][6], search_var["values"][7],
+                        search_var["values"][8],), tags="bg_yellow",)
                     self.tree.tag_configure("bg_yellow", background="yellow")
             self.tree.selection_set(self.tree.get_children()[0])
 
