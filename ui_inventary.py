@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'inventarySoHGCP.ui'
+## Form generated from reading UI file 'inventarytiBzoM.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.7.2
 ##
@@ -194,7 +194,7 @@ class Ui_inventory(object):
         ___qtreewidgetitem.setText(6, QCoreApplication.translate("inventory", u"VENTA", None));
         ___qtreewidgetitem.setText(5, QCoreApplication.translate("inventory", u"GANANCIA", None));
         ___qtreewidgetitem.setText(4, QCoreApplication.translate("inventory", u"COMPRA", None));
-        ___qtreewidgetitem.setText(3, QCoreApplication.translate("inventory", u"CANTIDAD", None));
+        ___qtreewidgetitem.setText(3, QCoreApplication.translate("inventory", u"CANT.", None));
         ___qtreewidgetitem.setText(2, QCoreApplication.translate("inventory", u"DESCRIPCION", None));
         ___qtreewidgetitem.setText(1, QCoreApplication.translate("inventory", u"CODIGO", None));
         ___qtreewidgetitem.setText(0, QCoreApplication.translate("inventory", u"ITEM", None));
