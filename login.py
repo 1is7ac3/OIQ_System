@@ -1,6 +1,7 @@
 from datetime import datetime
 import sys
 import data
+import ui_history
 import ui_login
 import ui_inventary
 import database
@@ -8,7 +9,7 @@ import PySide6.QtWidgets as QtW
 import PySide6.QtCore as QtC
 
 
-class MiApp(ui_login.QMainWindow):
+class Login(ui_login.QMainWindow):
     def __init__(self):
         super().__init__()
         self.ui = ui_login.Ui_sesion()
@@ -48,7 +49,7 @@ class MiApp(ui_login.QMainWindow):
         self.ui.key_result.setText("")
         i = self.ui.i_user.currentIndex()
         if self.ui.i_key.text() == self.key_box[i]:
-            self.hide()
+            self.close()
             self.window = product(self.key_box[i])
             self.window.show()
         elif self.int < 3:
@@ -56,7 +57,6 @@ class MiApp(ui_login.QMainWindow):
             self.int += 1
         else:
             self.close()
-            # i += 1
 
 
 class product(ui_inventary.QMainWindow):
@@ -77,6 +77,7 @@ class product(ui_inventary.QMainWindow):
         self.win.i_fcode.textChanged.connect(self.search_code)
         self.win.i_fdesc.textChanged.connect(self.search_desc)
         self.win.i_fdesc2.textChanged.connect(self.search_desc)
+        self.win.b_his.clicked.connect(self.history)
 
     def search_code(self):
         self.win.tree.clearSelection()
@@ -121,7 +122,7 @@ class product(ui_inventary.QMainWindow):
                         query = f"""UPDATE product SET
                                         {ubica}=%s WHERE name=%s"""
                         parameters = (new_qua, row2[0])
-                        self.add_history(row2[0], row2[1], row2[2], "Venta")
+                        self.add_history(row2[0], row2[1], row2[2], self.user)
                         database.run_query_edit(query, parameters)
                         query2 = "DELETE FROM sales WHERE name=%s"
                         database.run_query_edit(query2, (row2[0],))
@@ -260,7 +261,7 @@ class product(ui_inventary.QMainWindow):
         self.win.l_info_exit.setText(f"{name} fue eliminado correctamente")
         self.update_list_sales()
 
-    def add_user():
+    def add_user(self):
         query = "insert into users (name, password) values (%s,%s)"
         user = QtW.QInputDialog.getText(
             None, "Inicializacion", "Introduzca nuevo usuario:")
@@ -268,6 +269,38 @@ class product(ui_inventary.QMainWindow):
             None, "Inicializacion", "contraseña:", QtW.QLineEdit.Password)
         parameters = (user, key)
         database.run_query_edit(query, parameters)
+
+    def history(self):
+        # self.hide()
+        self.win_h = History()
+        self.win_h.show()
+
+
+class History(ui_history.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.win_h = ui_history.Ui_history()
+        self.win_h.setupUi(self)
+        self.win_h.l_th.setText("0")
+        self.update_list_history()
+
+    def update_list_history(self):
+        self.win_h.truu.clear()
+        t_hist = 0
+        locale = QtC.QLocale(QtC.QLocale.Spanish, QtC.QLocale.Chile)
+        self.win_h.l_th.setText(locale.toCurrencyString(t_hist))
+        query = """select name, quantity, price, sale, date from history"""
+        db_rows = database.run_query(query)
+        item = []
+        for row in db_rows:
+            item.append(ui_inventary.QTreeWidgetItem(
+                [row[0], str(row[2]), str(row[1]), str(row[3]), str(row[4])]))
+            t_hist += row[2]*row[1]
+            self.win_h.l_th.setText(locale.toCurrencyString(t_hist))
+        self.win_h.truu.addTopLevelItems(item)
+        for i in range(self.win_h.truu.topLevelItemCount()):
+            self.win_h.truu.resizeColumnToContents(i)
+            i += 1
 
 
 def main():
@@ -277,7 +310,7 @@ def main():
     database.create_table_sales()
     database.create_database_history()
     app = ui_login.QApplication(sys.argv)
-    login_app = MiApp()
+    login_app = Login()
     login_app.show()
     sys.exit(app.exec())
 
