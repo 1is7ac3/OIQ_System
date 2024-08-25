@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>1is7ac3 Isaac Quiroz</author>
+ <class>inventory</class>
+ <widget class="QMainWindow" name="inventory">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>740</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <widget class="QFrame" name="frame">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1280</width>
+      <height>720</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+    <widget class="QTreeWidget" name="tree">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>90</y>
+       <width>884</width>
+       <height>533</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <attribute name="headerMinimumSectionSize">
+      <number>20</number>
+     </attribute>
+     <attribute name="headerDefaultSectionSize">
+      <number>87</number>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>ITEM</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>CODIGO</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>DESCRIPCION</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>CANT.</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>COMPRA</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>GANANCIA</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>VENTA</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>RENDIC</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>BODEGA</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>LOCAL</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+    </widget>
+    <widget class="QPushButton" name="b_up">
+     <property name="geometry">
+      <rect>
+       <x>1020</x>
+       <y>40</y>
+       <width>141</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Atualizar Lista</string>
+     </property>
+    </widget>
+    <widget class="QTreeWidget" name="troo">
+     <property name="geometry">
+      <rect>
+       <x>910</x>
+       <y>90</y>
+       <width>371</width>
+       <height>291</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text">
+       <string>Descripcion</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Cantidad</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Precio</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
+    </widget>
+    <widget class="QPushButton" name="b_add">
+     <property name="geometry">
+      <rect>
+       <x>1050</x>
+       <y>380</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Agregar</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="b_del">
+     <property name="geometry">
+      <rect>
+       <x>980</x>
+       <y>380</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Eliminar</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="b_fin">
+     <property name="geometry">
+      <rect>
+       <x>910</x>
+       <y>380</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Retirar</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="i_add">
+     <property name="geometry">
+      <rect>
+       <x>1120</x>
+       <y>380</y>
+       <width>51</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="inputMask">
+      <string/>
+     </property>
+     <property name="text">
+      <string>1</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="c_local">
+     <property name="geometry">
+      <rect>
+       <x>1170</x>
+       <y>380</y>
+       <width>108</width>
+       <height>33</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>Rendic</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Bodega</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Local</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>940</x>
+       <y>490</y>
+       <width>87</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Total:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="t_venta">
+     <property name="geometry">
+      <rect>
+       <x>1020</x>
+       <y>490</y>
+       <width>101</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>320</x>
+       <y>630</y>
+       <width>151</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Total inventario:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="t_inventary">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>630</y>
+       <width>87</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="b_edit">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>620</y>
+       <width>114</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Editar</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>670</y>
+       <width>111</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Filtro Codigo:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="i_fcode">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>660</y>
+       <width>113</width>
+       <height>33</height>
+      </rect>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>670</y>
+       <width>151</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Filtro Descripcion:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="i_fdesc">
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>660</y>
+       <width>113</width>
+       <height>33</height>
+      </rect>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="i_fdesc2">
+     <property name="geometry">
+      <rect>
+       <x>530</x>
+       <y>660</y>
+       <width>113</width>
+       <height>33</height>
+      </rect>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="l_info_exit">
+     <property name="geometry">
+      <rect>
+       <x>906</x>
+       <y>438</y>
+       <width>361</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="b_his">
+     <property name="geometry">
+      <rect>
+       <x>1020</x>
+       <y>600</y>
+       <width>114</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Historial</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="b_delete">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>620</y>
+       <width>114</width>
+       <height>36</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Eliminar</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menu">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="defaultUp">
+    <bool>false</bool>
+   </property>
+   <widget class="QMenu" name="menuUsuario">
+    <property name="title">
+     <string>&amp;Usuario</string>
+    </property>
+    <addaction name="action_c"/>
+    <addaction name="separator"/>
+    <addaction name="action_u"/>
+   </widget>
+   <widget class="QMenu" name="menu2">
+    <property name="title">
+     <string>Arc&amp;hivo</string>
+    </property>
+    <addaction name="action_h"/>
+    <addaction name="action_i"/>
+    <addaction name="action_e"/>
+    <addaction name="separator"/>
+    <addaction name="action_s"/>
+   </widget>
+   <addaction name="menuUsuario"/>
+   <addaction name="menu2"/>
+  </widget>
+  <action name="action_c">
+   <property name="text">
+    <string>&amp;Cierre Local</string>
+   </property>
+  </action>
+  <action name="action_u">
+   <property name="text">
+    <string>&amp;Usuarios</string>
+   </property>
+  </action>
+  <action name="action_h">
+   <property name="text">
+    <string>&amp;Abrir Historial</string>
+   </property>
+  </action>
+  <action name="action_i">
+   <property name="text">
+    <string>&amp;Importar CVS</string>
+   </property>
+  </action>
+  <action name="action_e">
+   <property name="text">
+    <string>&amp;Exportar CVS</string>
+   </property>
+  </action>
+  <action name="action_s">
+   <property name="text">
+    <string>&amp;Cerrar Sesión</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
