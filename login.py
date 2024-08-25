@@ -1,12 +1,17 @@
 from datetime import datetime
+import os
 import sys
+from numpy import quantile
+from openpyxl import Workbook
 import data
+from main import Product
 import ui_history
 import ui_login
 import ui_inventary
 import database
 import PySide6.QtWidgets as QtW
 import PySide6.QtCore as QtC
+import ui_edit
 
 
 class Login(ui_login.QMainWindow):
@@ -50,7 +55,7 @@ class Login(ui_login.QMainWindow):
         i = self.ui.i_user.currentIndex()
         if self.ui.i_key.text() == self.key_box[i]:
             self.close()
-            self.window = product(self.key_box[i])
+            self.window = product(self.users_box[i])
             self.window.show()
         elif self.int < 3:
             self.ui.key_result.setText(f"Contraseña incorrecta {self.int}/3")
@@ -72,12 +77,16 @@ class product(ui_inventary.QMainWindow):
         self.win.b_add.clicked.connect(self.add_product_exit)
         self.win.b_del.clicked.connect(self.delete_exit)
         self.win.b_fin.clicked.connect(self.charge)
+        self.win.action_c.triggered.connect(self.close_local)
+        self.user = user
         self.update_list()
         self.update_list_sales()
         self.win.i_fcode.textChanged.connect(self.search_code)
         self.win.i_fdesc.textChanged.connect(self.search_desc)
         self.win.i_fdesc2.textChanged.connect(self.search_desc)
         self.win.b_his.clicked.connect(self.history)
+        self.win.b_edit.clicked.connect(lambda: self.auth(3))
+        self.win.b_delete.clicked.connect(lambda: self.auth(1))
 
     def search_code(self):
         self.win.tree.clearSelection()
@@ -122,19 +131,20 @@ class product(ui_inventary.QMainWindow):
                         query = f"""UPDATE product SET
                                         {ubica}=%s WHERE name=%s"""
                         parameters = (new_qua, row2[0])
-                        self.add_history(row2[0], row2[1], row2[2], self.user)
+                        self.add_history(row2[0], row2[1], row2[2], self.user,
+                                         "Venta")
                         database.run_query_edit(query, parameters)
                         query2 = "DELETE FROM sales WHERE name=%s"
                         database.run_query_edit(query2, (row2[0],))
         self.update_list()
         self.update_list_sales()
 
-    def add_history(self, name, quantity, price, sale):
+    def add_history(self, name, quantity, price, user, action):
         """Funcion agregar producto history"""
-        query = """insert into history (name, price, quantity, date, sale)
-        values(%s, %s, %s, %s, %s)"""
+        query = """insert into history (name, price, quantity, date, user,
+        action) values(%s, %s, %s, %s, %s, %s)"""
         date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-        parameters = (name, price, quantity, date, sale)
+        parameters = (name, price, quantity, date, user, action)
         database.run_query_edit(query, parameters)
 
     def import_lote(self):
@@ -160,11 +170,20 @@ class product(ui_inventary.QMainWindow):
         print(key[0])
         if key[0] == data.PASSWORD_ROOT:
             if option == 1:
-                self.delete_product(self.tree.selection())
+                try:
+                    id_data = self.win.tree.selectedItems()[0]
+                    query = """delete from product where code=%s"""
+                    database.run_query_edit(query, (id_data.text(1),))
+                    self.win.l_info_exit.setText(f"{id_data.text(2)} Borrado")
+                    self.update_list()
+                except IndexError:
+                    self.win.l_info_exit.setText("Seleccione un producto")
             if option == 2:
                 self.import_lote()
             if option == 3:
-                self.edit_product(self.tree.selection())
+                self.win_e = Edit(self.win.tree.selectedItems()[0])
+                self.win_e.show()
+                self.update_list()
             if option == 4:
                 self.export_lote()
         else:
@@ -272,8 +291,36 @@ class product(ui_inventary.QMainWindow):
 
     def history(self):
         # self.hide()
-        self.win_h = History()
-        self.win_h.show()
+        query = """select name, quantity, price, user, date from history"""
+        db_rows = database.run_query(query)
+        try:
+            db_rows[0]
+            self.win_h = History()
+            self.win_h.show()
+        except TypeError:
+            self.win.l_info_exit.setText("Historial Vacio")
+
+    def close_local(self):
+        date = datetime.now()
+        d_month = str(date.month)
+        d_year = str(date.year)
+        dir_history = "history/"+d_year+"/"+d_month
+        if not os.path.exists(dir_history):
+            os.makedirs(dir_history)
+
+        if not os.path.exists(dir_history + "/" +
+                              date.strftime("%d-%m-%Y %H:%M:%S")+".xlsx"):
+            xl_save = Workbook()
+            xl_active = xl_save.active
+            query = """select id, name, price, quantity, user, action,
+            date from history"""
+            db_rows = database.run_query(query)
+            for row in db_rows:
+                xl_active.append(row)
+                query_d = "DELETE FROM history WHERE name=%s"
+                database.run_query_edit(query_d, (row[2],))
+            xl_save.save(dir_history + "/" +
+                         date.strftime("%d-%m-%Y %H:%M:%S")+".xlsx")
 
 
 class History(ui_history.QMainWindow):
@@ -289,18 +336,61 @@ class History(ui_history.QMainWindow):
         t_hist = 0
         locale = QtC.QLocale(QtC.QLocale.Spanish, QtC.QLocale.Chile)
         self.win_h.l_th.setText(locale.toCurrencyString(t_hist))
-        query = """select name, quantity, price, sale, date from history"""
+        query = """select name, quantity, price, user, action, date
+        from history"""
         db_rows = database.run_query(query)
         item = []
         for row in db_rows:
             item.append(ui_inventary.QTreeWidgetItem(
-                [row[0], str(row[2]), str(row[1]), str(row[3]), str(row[4])]))
+                [row[0], str(row[2]), str(row[1]), str(row[3]), str(row[4]),
+                 str(row[5])]))
             t_hist += row[2]*row[1]
             self.win_h.l_th.setText(locale.toCurrencyString(t_hist))
         self.win_h.truu.addTopLevelItems(item)
         for i in range(self.win_h.truu.topLevelItemCount()):
             self.win_h.truu.resizeColumnToContents(i)
             i += 1
+
+
+class Edit(ui_edit.QDialog):
+    def __init__(self, id_data):
+        super().__init__()
+        self.win_e = ui_edit.Ui_edit()
+        self.win_e.setupUi(self)
+        try:
+            i_code = self.win_e.i_code.setText(id_data.text(1))
+            i_name = self.win_e.i_name.setText(id_data.text(2))
+            i_shop = self.win_e.i_shop.setText(id_data.text(4))
+            i_gana = self.win_e.i_gana.setText(id_data.text(5))
+            i_location = self.win_e.i_location.setText(id_data.text(7))
+            i_location2 = self.win_e.i_location2.setText(id_data.text(8))
+            i_location3 = self.win_e.i_location3.setText(id_data.text(9))
+            self.win_e.buttonBox.accepted.connect(
+                lambda: self.edit_records(i_code, i_name, i_shop, i_gana,
+                                          i_location, i_location2, i_location3,
+                                          id_data))
+        except IndexError:
+            QtW.QMessageBox.warning(None, "por favor seleccione un producto.")
+
+    def edit_records(code, name, shop, gana, location, location2, location3,
+                     id_data):
+        query = """update product set code=%s, name=%s, price_buy=%s,
+        ganancia=%s, price_sales=%s, location=%s , location2=%s, location3=%s
+        where code=%s"""
+        parameters = (code, name, shop, gana, location, location2, location3,
+                      id_data.text(1))
+        database.run_query_edit(query, parameters)
+        history = Product()
+        quantity = location+location2+location3
+        if location != id_data.text(7) or location2 != id_data.text(8) or (
+                location3 == id_data.text(9)):
+            history.add_product_history(
+                name, shop, quantity, history.user, f"""Producto {name}
+                Modificado {location} a {id_data.text(7)}, {location2} a
+                {id_data.text(8)}, {location2} a {id_data.text(9)}""")
+        else:
+            history.add_product_history(name, shop, quantity, history.user,
+                                        f"Producto {name} Modificado")
 
 
 def main():
