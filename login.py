@@ -1,10 +1,8 @@
 from datetime import datetime
 import os
 import sys
-from numpy import quantile
 from openpyxl import Workbook
 import data
-from main import Product
 import ui_history
 import ui_login
 import ui_inventary
