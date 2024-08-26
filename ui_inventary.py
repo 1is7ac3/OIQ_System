@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'inventarytiBzoM.ui'
+## Form generated from reading UI file 'inventaryUlNcwd.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.7.2
 ##
@@ -152,6 +152,9 @@ class Ui_inventory(object):
         self.b_his = QPushButton(self.frame)
         self.b_his.setObjectName(u"b_his")
         self.b_his.setGeometry(QRect(1020, 600, 114, 36))
+        self.b_delete = QPushButton(self.frame)
+        self.b_delete.setObjectName(u"b_delete")
+        self.b_delete.setGeometry(QRect(120, 620, 114, 36))
         inventory.setCentralWidget(self.centralwidget)
         self.menu = QMenuBar(inventory)
         self.menu.setObjectName(u"menu")
@@ -221,6 +224,7 @@ class Ui_inventory(object):
         self.label_4.setText(QCoreApplication.translate("inventory", u"Filtro Descripcion:", None))
         self.l_info_exit.setText("")
         self.b_his.setText(QCoreApplication.translate("inventory", u"Historial", None))
+        self.b_delete.setText(QCoreApplication.translate("inventory", u"Eliminar", None))
         self.menuUsuario.setTitle(QCoreApplication.translate("inventory", u"&Usuario", None))
         self.menu2.setTitle(QCoreApplication.translate("inventory", u"Arc&hivo", None))
     # retranslateUi
