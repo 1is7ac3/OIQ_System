@@ -122,7 +122,7 @@ def create_database_history():
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS history(
             id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), price INT,
-            quantity INT, sale VARCHAR(255), date VARCHAR(255))"""
+            quantity INT, user VARCHAR(255), action VARCHAR(255), date VARCHAR(255))"""
         )
         connection.commit()
 
@@ -138,7 +138,6 @@ def csv_import(file_name):
         reader = csv.reader(csv_file, delimiter=";")
         f = 1
         for row in reader:
-            print(f)
             query = """INSERT INTO product (code, name, price_buy, ganancia,
             price_sales, location, location2, location3)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
