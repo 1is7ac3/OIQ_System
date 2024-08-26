@@ -295,7 +295,7 @@ class product(ui_inventary.QMainWindow):
             db_rows[0]
             self.win_h = History()
             self.win_h.show()
-        except TypeError:
+        except IndexError:
             self.win.l_info_exit.setText("Historial Vacio")
 
     def close_local(self):
