@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'inventaryUlNcwd.ui'
+## Form generated from reading UI file 'inventaryIiebyP.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.7.2
 ##
@@ -183,7 +183,7 @@ class Ui_inventory(object):
     # setupUi
 
     def retranslateUi(self, inventory):
-        inventory.setWindowTitle(QCoreApplication.translate("inventory", u"MainWindow", None))
+        inventory.setWindowTitle(QCoreApplication.translate("inventory", u"OIQ Inventary", None))
         self.action_c.setText(QCoreApplication.translate("inventory", u"&Cierre Local", None))
         self.action_u.setText(QCoreApplication.translate("inventory", u"&Usuarios", None))
         self.action_h.setText(QCoreApplication.translate("inventory", u"&Abrir Historial", None))

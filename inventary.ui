@@ -17,7 +17,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>OIQ Inventary</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="font">
