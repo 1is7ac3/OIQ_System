@@ -1,5 +1,4 @@
 """Import librerías"""
-import sqlite3
 from tkinter import ttk, messagebox, filedialog
 import tkinter as tk
 import datetime
@@ -304,7 +303,7 @@ class Product():
         for element in records:
             self.troo.delete(element)
         query = "select id, name, quantity, price from sales"
-        db_rows = database.run_query(query)
+        db_rows = database.run_query_sqlite3(query)
         for row in db_rows:
             self.total_exit.set(self.total_exit.get() + (row[2] * row[3]))
             self.total_exit_show.set(format(self.total_exit.get(), ","))
@@ -370,7 +369,7 @@ class Product():
             self.message["text"] = "El nombre y el precio son requeridos."
 
     def add_product_exit(self, id_data):
-        """funcion agregar producto salida de inventario"""
+        """función agregar producto salida de inventario"""
         self.message_sales["text"] = ""
         try:
             self.tree.item(id_data)["text"]
@@ -390,11 +389,11 @@ class Product():
                 quantity = self.quality_exit.get()
                 price = self.tree.item(id_data)["values"][5]
                 parameters = (name, quantity, price)
-                database.run_query_edit(query, parameters)
+                database.run_query_edit_sqlite3(query, parameters)
                 self.message_sales["text"] = f"Producto {name} fue agregado"
                 self.update_table_sales()
-            except database.maria.errors.IntegrityError as err:
-                if err == database.maria.errorcode.ER_DUP_ENTRY:
+            except database.sqlite3.IntegrityError as err:
+                if err.args[0] == 'UNIQUE constraint failed':
                     self.message_sales["text"] = f"""{err}: ya se encuentra
                     en agregado."""
                 self.message_sales["text"] = f"{err}"
@@ -425,7 +424,7 @@ class Product():
         self.message_sales["text"] = ""
         name = self.troo.item(id_data)["text"]
         query = "DELETE FROM sales WHERE name = %s"
-        database.run_query_edit(query, (name,))
+        database.run_query_edit_sqlite3(query, (name,))
         self.message_sales["text"] = f"{name} fue eliminado correctamente"
         self.update_table_sales()
 
@@ -590,19 +589,20 @@ class Product():
 
     def cobrar(self):
         """funcion retirar de inventario"""
-        cobrar_wind = tk.Toplevel()
-        cobrar_wind.geometry("320x200")
+        self.cobrar_wind = tk.Toplevel()
+        self.cobrar_wind.geometry("320x200")
         self.cambio.set(value=0)
-        tk.Label(cobrar_wind, text="TOTAL").grid(row=0, column=0)
-        tk.Entry(cobrar_wind, textvariable=self.total_exit,
+        tk.Label(self.cobrar_wind, text="TOTAL").grid(row=0, column=0)
+        tk.Entry(self.cobrar_wind, textvariable=self.total_exit,
                  state="readonly").grid(row=0, column=1)
-        tk.Label(cobrar_wind, text="Pago").grid(row=1, column=0)
-        self.deposito = tk.Entry(cobrar_wind, textvariable=self.total_exit)
+        tk.Label(self.cobrar_wind, text="Pago").grid(row=1, column=0)
+        self.deposito = tk.Entry(
+            self.cobrar_wind, textvariable=self.total_exit)
         self.deposito.grid(row=1, column=1)
-        tk.Label(cobrar_wind, text="Cambio").grid(row=2, column=0)
-        tk.Entry(cobrar_wind, textvariable=self.cambio,
+        tk.Label(self.cobrar_wind, text="Cambio").grid(row=2, column=0)
+        tk.Entry(self.cobrar_wind, textvariable=self.cambio,
                  state="readonly").grid(row=2, column=1)
-        tk.Button(cobrar_wind, text="Retirar",
+        tk.Button(self.cobrar_wind, text="Retirar",
                   command=self.change_sales).grid(row=3, column=1,
                                                   sticky=tk.W + tk.E)
 
@@ -644,10 +644,11 @@ class Product():
             for dato_venta in list_venta:
                 name = self.troo.item(dato_venta)["text"]
                 query = "DELETE FROM sales WHERE name=%s"
-                database.run_query_edit(query, (name,))
+                database.run_query_edit_sqlite3(query, (name,))
             self.update_table_sales()
         else:
             messagebox.showwarning("Error", "Deposite mas dinero")
+        self.cobrar_wind.destroy()
 
     def add_product_history(self, name, price, quantity, sale):
         """Funcion agregar producto history"""
