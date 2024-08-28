@@ -3,6 +3,7 @@ import csv
 import sqlite3
 import mysql.connector as maria
 import data
+import login
 
 
 def create_database():
@@ -180,8 +181,14 @@ def create_database_history():
 def csv_import(file_name):
     """Función import cvs"""
     with open(file_name, "r", encoding="utf-8") as csv_file:
+        lineas = len(csv_file.readlines())
+    csv_file.close()
+    with open(file_name, "r", encoding="utf-8") as csv_file:
         reader = csv.reader(csv_file, delimiter=";")
         f = 1
+        progreso = login.QtW.QProgressDialog(
+            "Importando Productos", None, 1, lineas)
+        progreso.show()
         for row in reader:
             query = """INSERT INTO product (code, name, price_buy, ganancia,
             price_sales, location, location2, location3)
@@ -192,7 +199,6 @@ def csv_import(file_name):
                           price, round(float(row[4])), round(float(row[5])),
                           round(float(row[6])))
             result = run_query_edit(query, parameters)
-            print(result, maria.errorcode.ER_DUP_ENTRY)
             if result == 2:
                 query_db_exist = """select price_buy, ganancia,
                     location, location2, location3, code from product"""
@@ -209,8 +215,11 @@ def csv_import(file_name):
                                       round(int(row[5])+int(i[3])),
                                       round(int(row[6])+int(i[4])), i[5])
                         run_query_edit(query, parameters)
+            progreso.setValue(f)
             f += 1
+
     csv_file.close()
+    progreso.close()
 
 
 def csv_export(file_name):
