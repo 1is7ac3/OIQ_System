@@ -1,11 +1,12 @@
 """Import modules"""
 import csv
+import sqlite3
 import mysql.connector as maria
 import data
 
 
 def create_database():
-    """funcion crear database inventory"""
+    """función crear database inventory"""
     connection = maria.connect(**data.db_config_init)
     try:
         cursor = connection.cursor()
@@ -17,7 +18,7 @@ def create_database():
 
 
 def run_query(query, parameters=()):
-    """funcion correr busqueda"""
+    """función correr búsqueda"""
     conn = None
     cursor = None
     try:
@@ -37,8 +38,51 @@ def run_query(query, parameters=()):
             cursor.close()
 
 
+def run_query_sqlite3(query, parameters=()):
+    """función correr búsqueda"""
+    conn = None
+    cursor = None
+    try:
+        conn = maria.Connect(**data.db_config)
+        cursor = conn.cursor()
+        cursor.execute(query, parameters)
+        result = cursor.fetchall()
+        conn.commit()
+        return result
+    except maria.Error as err:
+        print(f"Error: {err}")
+        print(f"Consulta fallida: {cursor.statement}")
+    finally:
+        if cursor:
+            conn.close()
+        if conn:
+            cursor.close()
+
+
+def run_query_edit_sqlite3(query, parameters=()):
+    """función correr edit sqlite3"""
+    conn = None
+    cursor = None
+    try:
+        conn = maria.Connect(**data.db_config)
+        cursor = conn.cursor()
+        cursor.execute(query, parameters)
+        conn.commit()
+        return 1
+    except maria.Error as err:
+        print(f"Error: {err}")
+        print(f"Cambio fallido: {cursor.statement}")
+        if err.errno == maria.errorcode.ER_DUP_ENTRY:
+            return 2
+    finally:
+        if cursor:
+            conn.close()
+        if conn:
+            cursor.close()
+
+
 def run_query_edit(query, parameters=()):
-    """funcion correr edit"""
+    """función correr edit"""
     conn = None
     cursor = None
     try:
@@ -60,7 +104,7 @@ def run_query_edit(query, parameters=()):
 
 
 def create_table():
-    """funcion crear tablas"""
+    """función crear tablas"""
     connection = maria.Connect(**data.db_config)
     try:
         cursor = connection.cursor()
@@ -79,8 +123,8 @@ def create_table():
 
 
 def create_table_sales():
-    """funcion crear tablas"""
-    connection = maria.Connect(**data.db_config)
+    """función crear tablas"""
+    connection = sqlite3.connect("sales.db")
     try:
         cursor = connection.cursor()
         cursor.execute(
@@ -90,14 +134,14 @@ def create_table_sales():
         )
         connection.commit()
 
-    except maria.errors.IntegrityError as err:
+    except sqlite3.errors.IntegrityError as err:
         print(err)
     cursor.close()
     connection.close()
 
 
 def create_database_users():
-    """funcion crear table users"""
+    """función crear table users"""
     connection = maria.Connect(**data.db_config)
     try:
         cursor = connection.cursor()
@@ -115,14 +159,15 @@ def create_database_users():
 
 
 def create_database_history():
-    """funcion crear table history"""
+    """función crear table history"""
     connection = maria.Connect(**data.db_config)
     try:
         cursor = connection.cursor()
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS history(
             id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), price INT,
-            quantity INT, user VARCHAR(255), action VARCHAR(255), date VARCHAR(255))"""
+            quantity INT, user VARCHAR(255), action VARCHAR(255),
+            date VARCHAR(255))"""
         )
         connection.commit()
 
