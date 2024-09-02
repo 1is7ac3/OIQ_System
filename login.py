@@ -112,12 +112,15 @@ class product(ui_inventory.QMainWindow):
     def charge(self):
         ubic = self.win.c_local.currentIndex()
         if ubic == 0:
+            text = 7
             ubica = "location"
         elif ubic == 1:
+            text = 8
             ubica = "location2"
         else:
+            text = 9
             ubica = "location3"
-        qdata = f"""select name, {ubica} from product"""
+        '''qdata = f"""select name, {ubica} from product"""
         db_rows = database.run_query(qdata)
         for row in db_rows:
             qdata2 = """select name, quantity, price from sales"""
@@ -134,6 +137,29 @@ class product(ui_inventory.QMainWindow):
                         database.run_query_edit(query, parameters)
                         query2 = "DELETE FROM sales WHERE name=%s"
                         database.run_query_edit_sqlite3(query2, (row2[0],))
+        '''
+        for i in range(self.win.troo.topLevelItemCount()):
+            agotado = []
+            item_sales = self.win.troo.topLevelItem(i)
+            for j in range(self.win.tree.topLevelItemCount()):
+                item_product = self.win.tree.topLevelItem(j)
+                if item_sales.text(0) == item_product.text(2):
+                    new_can = int(item_product.text(
+                        text)) - int(item_sales.text(1))
+                    if new_can >= 0:
+                        query = f"""UPDATE product SET
+                                    {ubica}=%s WHERE name=%s"""
+                        parameters = (new_can, item_sales.text(0))
+                        self.add_history(
+                            item_sales.text(0), item_sales.text(1),
+                            item_sales.text(2), self.user, "Venta")
+                        database.run_query_edit(query, parameters)
+                        query2 = "DELETE FROM sales WHERE name=%s"
+                        database.run_query_edit_sqlite3(query2,
+                                                        (item_sales.text(0),))
+                    else:
+                        agotado.append(item_sales.text(0))
+        self.win.l_info_exit.setText(f"{agotado} Productos agotados")
         self.update_list_sales()
         self.update_list()
 
